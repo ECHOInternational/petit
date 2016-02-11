@@ -46,43 +46,19 @@ describe 'Petit App' do
 	describe "get ':/shortcode'" do
 		
 		context "when the shortcode is found" do
-
-			context "when it is not in debug mode" do
-				it "redirects to the correct destination" do
-					get '/abc123'
-					expect(last_response).to be_redirect
-					follow_redirect!
-					expect(last_request.url).to eq('http://www.yahoo.com/')
-				end
-
-				it "increments the access_count" do
-					shortcode_pre = Shortcode.find('abc123')
-					get 'abc123'
-					shortcode_post = Shortcode.find('abc123')
-					expect(shortcode_post.access_count).to eq(shortcode_pre.access_count + 1)
-				end
-
+			it "redirects to the correct destination" do
+				get '/abc123'
+				expect(last_response).to be_redirect
+				follow_redirect!
+				expect(last_request.url).to eq('http://www.yahoo.com/')
 			end
 
-			context "when it is in debug mode" do
-				it "returns the destination and interpreted short code as text" do
-					get 'abc123?debug=true'
-					expect(last_response).to be_ok
-					expect(last_response.body).to eq('http://www.yahoo.com (abc123)')
-				end
-				it "downcases the shortcode" do
-					get '/ABC123?debug=true'
-					expect(last_response.body).to eq('http://www.yahoo.com (abc123)')
-				end
-				it "does not increment the access_count" do
-					shortcode_pre = Shortcode.find('abc123')
-					get 'abc123?debug=true'
-					shortcode_post = Shortcode.find('abc123')
-					expect(shortcode_post.access_count).to eq(shortcode_pre.access_count)
-				end
-
+			it "increments the access_count" do
+				shortcode_pre = Shortcode.find('abc123')
+				get 'abc123'
+				shortcode_post = Shortcode.find('abc123')
+				expect(shortcode_post.access_count).to eq(shortcode_pre.access_count + 1)
 			end
-
 		end
 
 		context "when the shortcode is not found" do
@@ -113,4 +89,339 @@ describe 'Petit App' do
 		end
 	end
 
+	describe "get '/api/v1/shortcodes.?:format?'" do
+		context "when json is requested" do
+			it "returns Content-Type of 'application/vnd.api+json'" do
+				get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}
+				expect(last_response.header['Content-Type']).to include 'application/vnd.api+json'
+			end
+			it "returns a json object" do
+				get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}
+				expect {
+					JSON.parse(last_response.body)
+				}.to_not raise_error
+			end
+		end
+		context "when destination argument is not supplied" do
+			it "returns an error code 400" do
+				get '/api/v1/shortcodes'
+				expect(last_response.status).to eq 400
+			end
+			context "when json is requested" do
+				it "returns a json api conformant object" do
+					get '/api/v1/shortcodes.json'
+					json_response = JSON.parse(last_response.body)
+					expect(json_response).to include "errors"
+					expect(json_response['errors']).to be_a Array
+					expect(json_response['errors'].length).to be >= 1
+					expect(json_response['errors'][0]).to include "message"
+				end
+			end
+		end
+		context "when destination argument is supplied" do
+			context "when json is requested" do
+				it "returns a jsonapi conformant object" do
+					get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}
+					json_response = JSON.parse(last_response.body)
+					expect(json_response).to include "data"
+				end
+				context "when no records exist" do
+					it "returns and empty array" do
+						get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}
+						json_response = JSON.parse(last_response.body)
+						expect(json_response['data']).to eq []
+					end
+				end
+				context "when records exist" do
+					it "returns and array of hashes" do
+						get '/api/v1/shortcodes.json', params={"destination" => "www.yahoo.com"}
+						json_response = JSON.parse(last_response.body)
+						expect(json_response['data']).to be_kind_of Array
+						expect(json_response['data'].length).to be > 0 
+					end
+					it "returns child objects with destination and interpreted short code as json" do
+						get '/api/v1/shortcodes.json', params={"destination" => "www.yahoo.com"}
+						json_response = JSON.parse(last_response.body)
+						expect(json_response['data'][0]['attributes']).to include "name"
+						expect(json_response['data'][0]['attributes']).to include "destination"
+					end
+					it "returns child objects with a url to the generated shortcode" do
+						get '/api/v1/shortcodes.json', params={"destination" => "www.yahoo.com"}
+						json_response = JSON.parse(last_response.body)
+						expect(json_response['data'][0]['meta']).to include "generated_link"
+						expect(json_response['data'][0]['meta']['generated_link']).to be_kind_of String
+					end
+				end
+			end
+		end
+	end
+
+	describe "get '/api/v1/shortcodes/:shortcode.?:format?'" do
+		context "when json is requested" do
+			context "when the shortcode is present" do
+				it "returns Content-Type of 'application/vnd.api+json'" do
+					get '/api/v1/shortcodes/abc123.json'
+					expect(last_response.header['Content-Type']).to include 'application/vnd.api+json'
+				end
+				it "returns a json object" do
+					get '/api/v1/shortcodes/abc123.json'
+					expect {
+						JSON.parse(last_response.body)
+					}.to_not raise_error
+				end
+				it "returns a jsonapi conformant object" do
+					get '/api/v1/shortcodes/abc123.json'
+					json_response = JSON.parse(last_response.body)
+					expect(json_response).to include "data"
+					expect(json_response['data']).to include "attributes"
+				end
+				it "returns the destination and interpreted short code as json" do
+					get '/api/v1/shortcodes/abc123.json'
+					json_response = JSON.parse(last_response.body)
+					expect(json_response['data']['attributes']).to include "name"
+					expect(json_response['data']['attributes']).to include "destination"
+				end
+				it "returns a url to the generated shortcode" do
+					get '/api/v1/shortcodes/abc123.json'
+					json_response = JSON.parse(last_response.body)
+					expect(json_response['data']['meta']).to include "generated_link"
+					expect(json_response['data']['meta']['generated_link']).to eq Petit.configuration.service_base_url + "/abc123"
+				end
+				it "downcases the shortcode" do
+					get '/api/v1/shortcodes/ABC123.json'
+					json_response = JSON.parse(last_response.body)
+					expect(json_response['data']['attributes']['name']).to eq('abc123')
+				end
+				it "does not increment the access_count" do
+					shortcode_pre = Shortcode.find('abc123')
+					get '/api/v1/shortcodes/abc123.json'
+					shortcode_post = Shortcode.find('abc123')
+					expect(shortcode_post.access_count).to eq(shortcode_pre.access_count)
+				end
+			end
+			context "when the shortcode is not present" do
+				it "returns an 404 (not found) error" do
+					get '/api/v1/shortcodes/thisisnotfoundever.json'
+					expect(last_response).to be_not_found
+				end
+				it "returns a JSON object" do
+					get '/api/v1/shortcodes/thisisnotfoundever.json'
+					expect {
+						JSON.parse(last_response.body)
+					}.to_not raise_error
+				end
+				it "returns a JSON error message" do
+					get '/api/v1/shortcodes/thisisnotfoundever.json'
+					json_response = JSON.parse(last_response.body)
+					expect(json_response).to include "errors"
+					expect(json_response['errors']).to be_a Array
+					expect(json_response['errors'].length).to be >= 1
+					expect(json_response['errors'][0]).to include "message"
+				end
+			end
+		end
+	end
+
+	describe "post '/api/v1/shortcodes.?:format?'" do
+		context "when shortcode does not already exist" do
+			before(:context) do 
+				shortcode = Shortcode.find('testcode')
+				if shortcode 
+					shortcode.destroy
+				end
+			end
+			context "when parameters are correct" do 
+				it "returns 201 (created)" do 	
+					post '/api/v1/shortcodes', params={"name" => "testcode", "destination" => "www.testcode.io", "ssl" => true}
+					expect(last_response.status).to eq 201
+				end
+				it "creates a shortcode" do
+					found = Shortcode.find('testcode')
+					expect(found).to_not be_nil
+				end
+				it "has correct values" do
+					found = Shortcode.find('testcode')
+					expect(found.name).to eq 'testcode'
+					expect(found.destination).to eq 'www.testcode.io'
+					expect(found.ssl?).to be true
+				end
+				it "returns a Location header with a link to the new address" do
+					shortcode = Shortcode.find('testcode')
+					if shortcode 
+						shortcode.destroy
+					end
+					post '/api/v1/shortcodes', params={"name" => "testcode", "destination" => "www.testcode.io", "ssl" => true}
+					expect(last_response.headers).to include "Location"
+					expect(last_response.headers["Location"]).to eq Petit.configuration.api_base_url + "/api/v1/shortcodes/testcode"
+				end
+			end
+			context "when parameters are not correct" do
+				it "returns 400 (Bad Request)" do
+					post '/api/v1/shortcodes', params={"name" => "testcode"}
+					expect(last_response.status).to eq 400
+				end
+			end
+		end
+		context "when shortcode already exists" do
+			it "throws a 409 (conflict) error" do
+				get '/testshortcodeunsuccessful'
+				expect(last_response).to be_redirect
+				follow_redirect!
+				expect(last_request.url).to eq('https://www.test.me/')
+				post '/api/v1/shortcodes', params={"name" => "testshortcodeunsuccessful", "destination" => "www.test.me", "ssl" => true}
+				expect(last_response.status).to eq 409
+			end
+		end
+	end
+
+	describe "put '/'" do
+		context "when no not_found_destination is defined" do
+	  		it "a not_found_destination is nil" do
+				expect(Petit.configuration.not_found_destination).to be_nil
+			end
+			it "throws 404 from root" do
+				put '/'
+				expect(last_response).to be_not_found
+			end
+		end
+
+		context "when a not_found_destination is defined" do
+
+			it "has a not_found_destination configured" do
+				Petit.configuration.not_found_destination  = 'http://www.google.com/'
+				expect(Petit.configuration.not_found_destination).to_not be_nil
+			end
+			it "throws 404 from root" do
+				Petit.configuration.not_found_destination  = 'http://www.google.com/'
+				put '/'
+				expect(last_response).to be_not_found
+			end
+		end
+	end
+
+	describe "delete '/'" do
+		context "when no not_found_destination is defined" do
+	  		it "a not_found_destination is nil" do
+				expect(Petit.configuration.not_found_destination).to be_nil
+			end
+			it "throws 404 from root" do
+				delete '/'
+				expect(last_response).to be_not_found
+			end
+		end
+
+		context "when a not_found_destination is defined" do
+
+			it "has a not_found_destination configured" do
+				Petit.configuration.not_found_destination  = 'http://www.google.com/'
+				expect(Petit.configuration.not_found_destination).to_not be_nil
+			end
+			it "throws 404 from root" do
+				Petit.configuration.not_found_destination  = 'http://www.google.com/'
+				delete '/'
+				expect(last_response).to be_not_found
+			end
+		end
+	end
+
+	describe "put '/api/v1/shortcodes/:shortcode.?:format?'" do
+		context "if the shortcode is not found" do
+			it "throws a 404 (not found) error" do
+				put '/api/v1/shortcodes/notthere23480238', params={"name" => "nocreate", "destination" => "www.shouldntwork.com", "ssl" => false}
+				expect(last_response).to be_not_found
+			end
+			context "when json is requested" do
+				it "returns a json api conformant object" do
+					put '/api/v1/shortcodes/notthere23480238.json', params={"name" => "nocreate", "destination" => "www.shouldntwork.com", "ssl" => false}	
+					json_response = JSON.parse(last_response.body)
+					expect(json_response).to include "errors"
+					expect(json_response['errors']).to be_a Array
+					expect(json_response['errors'].length).to be >= 1
+					expect(json_response['errors'][0]).to include "message"
+				end
+			end
+		end
+		context "if the shortcode is found" do
+			context "if the updated data is valid" do
+				
+				shortcode = Shortcode.new({name: 'abc124', destination: 'www.yahoo.com', ssl: true})
+				shortcode.destroy
+				shortcode.save
+
+				it "returns 200" do
+					put '/api/v1/shortcodes/abc124', params={"destination" => "www.google.com"}
+					expect(last_response).to be_ok
+				end
+				it "updates the destination" do
+					put '/api/v1/shortcodes/abc124', params={"destination" => "www.foogle.com"}
+					expect(last_response).to be_ok
+					result = Shortcode.find_by_name('abc124')
+					expect(result.destination).to eq "www.foogle.com"
+				end
+				it "does not override parameters that are not passed" do
+					result = Shortcode.find_by_name('abc124')
+					expect(result.ssl?).to be true
+				end
+				it "updates the ssl flag" do
+					put '/api/v1/shortcodes/abc124', params={"ssl" => false}
+					expect(last_response).to be_ok
+					result = Shortcode.find_by_name('abc124')
+					expect(result.ssl?).to be false
+				end
+				it "ignores an attempt to update the name" do
+					put '/api/v1/shortcodes/abc124', params={"name" => "newnamethatdoesntexist"}
+					expect(last_response).to be_ok
+					result = Shortcode.find_by_name('newnamethatdoesntexist')
+					expect(result).to be_nil
+					result = Shortcode.find_by_name('abc124')
+					expect(result.name).to eq "abc124"
+				end
+				
+			end
+			context "if the updated data is invalid" do
+				shortcode = Shortcode.new({name: 'abc124', destination: 'www.yahoo.com', ssl: true})
+				shortcode.destroy
+				shortcode.save
+				
+				it "throws a 400 (Bad Request) error" do
+					put '/api/v1/shortcodes/abc124', params={"destination"=>""}
+					expect(last_response.status).to eq 400
+				end
+
+			end
+		end
+	end
+
+	describe "delete '/api/v1/shortcodes/:shortcode.?:format?'" do
+		context "if the shortcode is not found" do
+			it "throws a 404 (not found) error" do
+				delete '/notthere23480238'
+				expect(last_response).to be_not_found
+			end
+		end
+		context "if the shortcode is found" do
+			it "deletes the record" do
+				shortcode = Shortcode.new({name: 'abc124', destination: 'www.yahoo.com', ssl: true})
+				shortcode.destroy
+				shortcode.save
+				
+				get '/abc124'
+				expect(last_response).to be_redirect
+
+				delete '/api/v1/shortcodes/abc124'
+				
+				get '/abc124'
+				expect(last_response).to be_not_found
+
+			end
+			it "returns 200" do
+				shortcode = Shortcode.new({name: 'abc124', destination: 'www.yahoo.com', ssl: true})
+				shortcode.destroy
+				shortcode.save
+
+				delete '/api/v1/shortcodes/abc124'
+				expect(last_response).to be_ok
+			end
+		end
+	end
 end

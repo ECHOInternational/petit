@@ -27,5 +27,29 @@ module Petit
 				expect(config.not_found_destination).to eq("http://www.404.org/")
 			end
 		end
+		describe "#api_base_url" do
+			it "default value is 'http://localhost'" do
+				expect(Configuration.new.api_base_url).to eq('http://localhost')
+			end
+		end
+		describe "#api_base_url=" do
+			it "can set value" do
+				config = Configuration.new
+				config.api_base_url = 'https://api.link.me'
+				expect(config.api_base_url).to eq('https://api.link.me')
+			end
+		end
+		describe "#service_base_url" do
+			it "default value is 'http://change.me'" do
+				expect(Configuration.new.service_base_url).to eq('http://change.me')
+			end
+		end
+		describe "#service_base_url=" do
+			it "can set value" do
+				config = Configuration.new
+				config.service_base_url = 'http://link.me'
+				expect(config.service_base_url).to eq('http://link.me')
+			end
+		end
 	end
 end

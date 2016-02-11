@@ -2,17 +2,16 @@ class Shortcode
 	require 'aws-sdk'
 	require 'active_support/all'
 
-	attr_accessor :name, :destination, :ssl
-	attr_reader :created_at, :updated_at, :access_count
+	attr_reader :created_at, :updated_at, :access_count, :name, :destination, :ssl
 
 	def initialize(params = {})
 		@dynamoDBclient = Aws::DynamoDB::Client.new
 
-		@name = params.with_indifferent_access[:name] || params.with_indifferent_access[:shortcode]
-		@name = @name.downcase if @name
-		@destination = params.with_indifferent_access[:destination]
-		@destination = @destination.downcase if @destination
-		@ssl = params.with_indifferent_access[:ssl] || false
+		name = params.with_indifferent_access[:name] || params.with_indifferent_access[:shortcode]
+		
+		self.name=(name)
+		self.destination=(params.with_indifferent_access[:destination])
+		self.ssl=(params.with_indifferent_access[:ssl])
 
 		@access_count = params.with_indifferent_access[:access_count] || nil
 		
@@ -37,6 +36,14 @@ class Shortcode
 	def destination=(str)
 		@destination = str
 		@destination = @destination.downcase if @destination
+	end
+
+	def ssl=(val)
+		if val == true || val =~ (/(true|t|yes|y|1)$/i)
+			@ssl = true
+		else
+			@ssl = false
+		end
 	end
 
 	def ssl?
@@ -129,6 +136,17 @@ class Shortcode
 		rescue Aws::DynamoDB::Errors::ValidationException
 			return false
 		end
+	end
+
+	def to_json(*a)
+	  {
+	  	name: @name,
+	  	created_at: @created_at,
+	  	updated_at: @updated_at,
+	  	access_count: @access_count,
+	  	destination: @destination,
+	  	ssl: @ssl
+	  }.to_json(*a)
 	end
 
 	def self.find(name)

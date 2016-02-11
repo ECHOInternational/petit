@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'aws-sdk', '~> 2'
   spec.add_dependency 'activesupport', '~> 4.2.3'
   spec.add_dependency 'sinatra'
+  spec.add_dependency 'jsonapi-serializers'
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"

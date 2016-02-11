@@ -13,11 +13,13 @@ module Petit
   end
 
   class Configuration
-    attr_accessor :db_table_name, :not_found_destination
+    attr_accessor :db_table_name, :not_found_destination, :api_base_url, :service_base_url
 
     def initialize
       @db_table_name = 'shortcodes'
       @not_found_destination = nil
+      @api_base_url = "http://localhost"
+      @service_base_url = "http://change.me"
     end
   end
 end

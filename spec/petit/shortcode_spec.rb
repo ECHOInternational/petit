@@ -125,6 +125,27 @@ describe Shortcode do
 		end
 	end
 
+	it { is_expected.to respond_to(:to_json) }
+	describe "#to_json" do
+		shortcode = Shortcode.new({name: 'testjsonoutput', destination: 'www.json.me', ssl: true})
+		it "returns a string" do
+			expect(shortcode.to_json).to be_a(String)
+		end
+		it "can be parsed as JSON" do
+			expect {
+				JSON.parse(shortcode.to_json)
+			}.to_not raise_error
+		end
+		it "has a name" do
+			output = JSON.parse(shortcode.to_json)
+			expect(output).to include "name"
+		end
+		it "has a name value that matches that of the object" do
+			output = JSON.parse(shortcode.to_json)
+			expect(output['name']).to eq shortcode.name
+		end
+	end
+
 	it { is_expected.to respond_to(:update) }
 	describe "#update" do
 		context "is successful" do
