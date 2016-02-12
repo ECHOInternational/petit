@@ -19,6 +19,8 @@ module Petit
 		end
 
 		get '/api/v1/shortcodes.?:format?' do
+			require_ssl params[:format]
+			
 			if params[:destination]
 				shortcodes = Shortcode.find_by_destination(params[:destination])
 				return_shortcode_collection(shortcodes, params[:format])
@@ -95,6 +97,12 @@ module Petit
 			end
 		end
 
+		def require_ssl(format = nil)
+			unless request.secure?
+				return_error 403, format, "HTTPS Required"
+			end
+		end
+
 		def redirect_to(shortcode)
 			url = ""
 			if shortcode.ssl?
@@ -140,7 +148,6 @@ module Petit
 		end
 
 		def return_error(error_code = 500, format=nil, message=nil, pointer=nil, parameter=nil)
-			status error_code
 			case format
 			when "json"
 				response.headers['Content-Type'] = 'application/vnd.api+json'
@@ -158,9 +165,9 @@ module Petit
 					jsonBody[:errors][0]['source'].store("pointer", pointer)
 					jsonBody[:errors][0]['source'].store("parameter", parameter) if parameter
 				end
-				jsonBody.to_json
+				halt error_code, jsonBody.to_json
 			else
-				message
+				halt error_code, message
 			end
 		end
 	end

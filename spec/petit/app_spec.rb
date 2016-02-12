@@ -90,13 +90,19 @@ describe 'Petit App' do
 	end
 
 	describe "get '/api/v1/shortcodes.?:format?'" do
+		context "when ssl is not employed" do
+			it "returns error type 403 'HTTPS Required'" do
+				get '/api/v1/shortcodes'
+				expect(last_response.status).to eq 403
+			end
+		end
 		context "when json is requested" do
 			it "returns Content-Type of 'application/vnd.api+json'" do
-				get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}
+				get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}, {'HTTPS' => 'on'}
 				expect(last_response.header['Content-Type']).to include 'application/vnd.api+json'
 			end
 			it "returns a json object" do
-				get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}
+				get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}, {'HTTPS' => 'on'}
 				expect {
 					JSON.parse(last_response.body)
 				}.to_not raise_error
@@ -104,12 +110,12 @@ describe 'Petit App' do
 		end
 		context "when destination argument is not supplied" do
 			it "returns an error code 400" do
-				get '/api/v1/shortcodes'
+				get '/api/v1/shortcodes', {}, {'HTTPS' => 'on'}
 				expect(last_response.status).to eq 400
 			end
 			context "when json is requested" do
 				it "returns a json api conformant object" do
-					get '/api/v1/shortcodes.json'
+					get '/api/v1/shortcodes.json', {}, {'HTTPS' => 'on'}
 					json_response = JSON.parse(last_response.body)
 					expect(json_response).to include "errors"
 					expect(json_response['errors']).to be_a Array
@@ -121,32 +127,32 @@ describe 'Petit App' do
 		context "when destination argument is supplied" do
 			context "when json is requested" do
 				it "returns a jsonapi conformant object" do
-					get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}
+					get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}, {'HTTPS' => 'on'}
 					json_response = JSON.parse(last_response.body)
 					expect(json_response).to include "data"
 				end
 				context "when no records exist" do
 					it "returns and empty array" do
-						get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}
+						get '/api/v1/shortcodes.json', params={"destination" => "www.gobbledygoodadfadf.id"}, {'HTTPS' => 'on'}
 						json_response = JSON.parse(last_response.body)
 						expect(json_response['data']).to eq []
 					end
 				end
 				context "when records exist" do
 					it "returns and array of hashes" do
-						get '/api/v1/shortcodes.json', params={"destination" => "www.yahoo.com"}
+						get '/api/v1/shortcodes.json', params={"destination" => "www.yahoo.com"}, {'HTTPS' => 'on'}
 						json_response = JSON.parse(last_response.body)
 						expect(json_response['data']).to be_kind_of Array
 						expect(json_response['data'].length).to be > 0 
 					end
 					it "returns child objects with destination and interpreted short code as json" do
-						get '/api/v1/shortcodes.json', params={"destination" => "www.yahoo.com"}
+						get '/api/v1/shortcodes.json', params={"destination" => "www.yahoo.com"}, {'HTTPS' => 'on'}
 						json_response = JSON.parse(last_response.body)
 						expect(json_response['data'][0]['attributes']).to include "name"
 						expect(json_response['data'][0]['attributes']).to include "destination"
 					end
 					it "returns child objects with a url to the generated shortcode" do
-						get '/api/v1/shortcodes.json', params={"destination" => "www.yahoo.com"}
+						get '/api/v1/shortcodes.json', params={"destination" => "www.yahoo.com"}, {'HTTPS' => 'on'}
 						json_response = JSON.parse(last_response.body)
 						expect(json_response['data'][0]['meta']).to include "generated_link"
 						expect(json_response['data'][0]['meta']['generated_link']).to be_kind_of String
