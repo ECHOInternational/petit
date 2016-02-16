@@ -90,6 +90,57 @@ describe 'Petit App' do
 		end
 	end
 
+	describe "get '/api/v1/suggestion" do
+		context "when ssl is not employed" do
+			it "returns error type 403 'HTTPS Required" do
+				get '/api/v1/suggestion'
+				expect(last_response.status).to eq 403
+			end
+		end
+		context "when ssl is employed" do
+			it "returns code 200 OK" do
+				get '/api/v1/suggestion', {}, {'HTTPS' => "on"}
+				expect(last_response.status).to eq 200
+			end
+		end
+		context "when json is requested" do
+			it "returns Content-Type of 'application/vnd.api+json'" do
+				header 'Accept', 'application/json'
+				get '/api/v1/suggestion', {}, {'HTTPS' => 'on'}
+				expect(last_response.header['Content-Type']).to include 'application/vnd.api+json'
+			end
+			it "returns a json object" do
+				header 'Accept', 'application/json'
+				get '/api/v1/suggestion', {}, {'HTTPS' => 'on'}
+				expect {
+					JSON.parse(last_response.body)
+				}.to_not raise_error
+			end
+			it "returns a properly formatted vnd.api+json object" do
+				header 'Accept', 'application/json'
+				get '/api/v1/suggestion', {}, {'HTTPS' => 'on'}
+				json_response = JSON.parse(last_response.body)
+				expect(json_response).to include "data"
+				expect(json_response['data']).to be_a Hash
+				expect(json_response['data']).to include "type"
+				expect(json_response['data']['type']).to eq "suggestion"
+				expect(json_response['data']['id']).to be_a String
+				expect(json_response['data']).to include "attributes"
+				expect(json_response['data']['attributes']).to include "name"
+				expect(json_response['data']['attributes']['name'].length).to be > 0
+				expect(json_response['data']['attributes']['name']).to be_a String
+			end
+		end
+		context "when plaintext is requested" do
+			it "returns a string" do
+				header 'Accept', 'text/html'
+				get '/api/v1/suggestion', {}, {'HTTPS' => 'on'}
+				expect(last_response.header['Content-Type']).to include 'text/html'
+				expect(last_response.body).to be_a String
+			end
+		end
+	end
+
 	describe "get '/api/v1/shortcodes'" do
 		context "when ssl is not employed" do
 			it "returns error type 403 'HTTPS Required'" do

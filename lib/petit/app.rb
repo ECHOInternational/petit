@@ -36,6 +36,11 @@ module Petit
 			end
 		end
 
+		get '/api/v1/suggestion' do
+			require_ssl
+			return_suggestion
+		end
+
 		get '/api/v1/shortcodes/:shortcode' do
 			require_ssl
 
@@ -138,6 +143,25 @@ module Petit
 
 		def return_not_found
 			return_error(404, "Not Found")
+		end
+
+		def return_suggestion
+			suggestion = Shortcode.suggest
+			if request.accept? 'application/json'
+				response.headers['Content-Type'] = 'application/vnd.api+json'
+				jsonBody = {
+					data: {
+						type: "suggestion",
+						id: suggestion,
+						attributes: {
+							name: suggestion
+						}
+					}
+				}
+				jsonBody.to_json
+			else
+				suggestion
+			end
 		end
 
 		def return_shortcode(shortcode)
