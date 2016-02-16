@@ -5,6 +5,25 @@ describe Shortcode do
 	
 	#be sure there is a configuration to access.
 	Petit.configure
+	describe ".suggest" do
+		it "responds to suggest" do
+			expect(Shortcode).to respond_to(:suggest)
+		end
+		it "returns a string" do
+			expect(Shortcode.suggest).to be_a String
+		end
+		it "returns a string the length specified" do
+			expect(Shortcode.suggest(2).length).to be 2
+			expect(Shortcode.suggest(14).length).to be 14 
+		end
+		it "returns a unique name that is not currently in the database" do
+			suggestion = Shortcode.suggest
+			expect(Shortcode.find(suggestion)).to be nil
+		end
+		it "returns nil if specified length is 0" do
+			expect(Shortcode.suggest(0)).to be nil
+		end
+	end
 
 	it "does not have ssl by default" do
 		expect(subject.ssl?).to be false

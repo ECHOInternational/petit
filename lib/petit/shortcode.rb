@@ -188,6 +188,27 @@ class Shortcode
 		})
 		resp.items.map {|item| self.new(item)}
 	end
+
+	def self.suggest(size = 6)
+		unless size > 0
+			return nil
+		end
+
+		suggestion = generate_random_string(size)
+		
+		if find_by_name(suggestion) == nil
+			return suggestion
+		else
+			suggest(size + 1)
+		end
+	end
+
+	private
+
+	def self.generate_random_string(size)
+		charset = %w{ 2 3 4 6 7 9 a c d e f g h j k m n p q r t w x y z}
+		(0...size).map{ charset.to_a[rand(charset.size)] }.join
+	end
 end
 
 module ShortcodeErrors
