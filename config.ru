@@ -5,4 +5,5 @@ if File.exists? ("./config/petit.rb")
 else
   Petit.configure
 end
+
 run Petit::App
