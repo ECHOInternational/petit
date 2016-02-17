@@ -1,6 +1,6 @@
 require './lib/petit'
 Petit.configure
-if File.exists? ("./config/petit.rb")
+if File.exist? './config/petit.rb'
   require './config/petit.rb'
 else
   Petit.configure

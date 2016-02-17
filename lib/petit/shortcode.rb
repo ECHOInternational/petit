@@ -1,219 +1,299 @@
-class Shortcode
-	require 'aws-sdk'
-	require 'active_support/all'
+module Petit
+  # The Shortcode class encapsulates a shortcode object.
+  # Currently this class also contains the CRUD functions
+  # for the AWS::DynamoDB backing store as well
+  # @todo The ORM should be abstracted out of this class.
+  class Shortcode
+    require 'aws-sdk'
+    require 'active_support/all'
 
-	attr_reader :created_at, :updated_at, :access_count, :name, :destination, :ssl
+    attr_reader :created_at, :updated_at, :access_count
+    attr_accessor :name, :destination, :ssl
 
-	def initialize(params = {})
-		@dynamoDBclient = Aws::DynamoDB::Client.new
+    # Shortcode instance initializer
+    #
+    # @param [Hash] params the collection of values by which to instantiate a Shortcode
+    #   object. This is used primarily for generating object from database records.
+    # @option params [String] :name The Shortcode
+    # @option params [String] :shortcode The Shortcode (alias for name)
+    # @option params [String] :destination The destination URL for the shortcode (Should not include http(s)://)
+    # @option params [String, Integer, Boolean] :ssl Set protocol to http(false) or https(true)
+    # @option params [Integer] :access_count The number of times a resource has been accessed
+    # @option params [String] :created_at When the Shortcode was created
+    # @option params [String] :updated_at The last time the Shortcode was modified
+    def initialize(params = {})
+      @dynamo_db_client = Aws::DynamoDB::Client.new
+      create_from_params(params.with_indifferent_access)
+    end
 
-		name = params.with_indifferent_access[:name] || params.with_indifferent_access[:shortcode]
-		
-		self.name=(name)
-		self.destination=(params.with_indifferent_access[:destination])
-		self.ssl=(params.with_indifferent_access[:ssl])
+    # Sets the name of the Petit::Shortcode object and ensures it is all lowercase
+    #
+    # @param name [String] the name to assign the object
+    # @return [String] the name of the object
+    def name=(name)
+      @name = name
+      @name = @name.downcase if @name
+    end
 
-		@access_count = params.with_indifferent_access[:access_count] || nil
-		
-		unless params.with_indifferent_access[:created_at].nil?
-			@created_at = Time.at(params.with_indifferent_access[:created_at])
-		else
-			@created_at = nil
-		end
+    # Sets the destination of the Petit::Shortcode object and ensures it is all lowercase
+    #
+    # @param destination [String] the destination to assign the object
+    # @return [String], the destination of the object
+    def destination=(destination)
+      @destination = destination
+      @destination = @destination.downcase if @destination
+    end
 
-		unless params.with_indifferent_access[:updated_at].nil?
-			@updated_at = Time.at(params.with_indifferent_access[:updated_at])
-		else
-			@updated_at = nil
-		end
-	end
+    # Sets the ssl (https) flag for the Petit::Shortcode object
+    #
+    # @param ssl [String, Integer, Boolean] the value to set the ssl flag
+    # @return [Boolean] the ssl flag value of the object
+    def ssl=(ssl)
+      @ssl = if ssl == true || ssl =~ /(true|t|yes|y|1)$/i
+               true
+             else
+               false
+             end
+    end
 
-	def name=(str)
-		@name = str
-		@name = @name.downcase if @name
-	end
+    # Predicate method to return the SSL flag for the Petit::Shortcode Object
+    #
+    # @return [Boolean] the ssl flag value of the object
+    def ssl?
+      ssl
+    end
 
-	def destination=(str)
-		@destination = str
-		@destination = @destination.downcase if @destination
-	end
+    # Validates and saves a new object to the database.
+    # To update exisiting objects use {#update}.
+    #
+    # @return [Boolean] TRUE if save is successful
+    # @raise [Petit::ShortcodeAccessError] when access is denied
+    # @raise [Petit::IncompleteObjectError] when the Shortcode fails validation
+    # rubocop:disable Metrics/MethodLength
+    def save
+      time = Time.now.to_i
+      begin
+        @dynamo_db_client.put_item(
+          table_name: Petit.configuration.db_table_name,
+          item: {
+            'shortcode' => @name,
+            'destination' => @destination,
+            'ssl' => ssl?,
+            'access_count' => 0,
+            'created_at' => time,
+            'updated_at' => time
+          },
+          return_consumed_capacity: 'INDEXES',
+          return_item_collection_metrics: 'SIZE',
+          expected: { 'shortcode' => { exists: false } }
+        )
+        @created_at = time
+        @updated_at = time
+        @access_count = 0
+        return true
+      rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+        raise(
+          Petit::ShortcodeAccessError,
+          'Item already exists, cannot overwrite only update or delete.'
+        )
+      rescue Aws::DynamoDB::Errors::ValidationException
+        raise(
+          Petit::IncompleteObjectError,
+          'Object must have both a name(shortcode) and a destination.'
+        )
+      end
+    end
+    # rubocop:enable Metrics/MethodLength
 
-	def ssl=(val)
-		if val == true || val =~ (/(true|t|yes|y|1)$/i)
-			@ssl = true
-		else
-			@ssl = false
-		end
-	end
+    # Updates an existing object in the database.
+    # To create new objects use {#save}.
+    #
+    # @return [Hash] resulting collection of object attributes after update 
+    # @raise [Petit::ShortcodeAccessError] when record to update does not exist
+    # @raise [Petit::IncompleteObjectError] when the Shortcode fails validation
+    # rubocop:disable Metrics/MethodLength
+    def update
+      time = Time.now.to_i
+      begin
+        resp = @dynamo_db_client.update_item(
+          table_name: Petit.configuration.db_table_name,
+          key: { 'shortcode' => @name },
+          update_expression: 'SET destination = :new_destination,
+            ssl = :new_ssl,
+            new_updated_at = :new_updated_at',
+          expression_attribute_values: {
+            ':new_destination' => @destination,
+            ':new_ssl' => ssl?,
+            ':new_updated_at' => time
+          },
+          return_values: 'ALL_NEW',
+          return_consumed_capacity: 'INDEXES',
+          return_item_collection_metrics: 'SIZE',
+          condition_expression: 'attribute_exists(shortcode)'
+        )
+        @updated_at = resp.attributes['updated_at'] if resp.attributes
+        resp.attributes
 
-	def ssl?
-		ssl
-	end
+      rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+        raise(
+          Petit::ShortcodeAccessError,
+          'Cannot update item. Item does not exist.'
+        )
+      rescue Aws::DynamoDB::Errors::ValidationException
+        raise(
+          Petit::IncompleteObjectError,
+          'Object must have both a name(shortcode) and a destination.'
+        )
+      end
+    end
+    # rubocop:enable Metrics/MethodLength
 
-	def save
-		time = Time.now.to_i
-		begin
-			@dynamoDBclient.put_item({
-			  table_name: Petit.configuration.db_table_name, # required
-			  item: { # required
-			    "shortcode" => @name, # value <Hash,Array,String,Numeric,Boolean,IO,Set,nil>
-			    "destination" => @destination,
-			    "ssl" => ssl?,
-			    "access_count" => 0,
-			    "created_at" => time,
-			    "updated_at" => time
-			  },	
-			  return_consumed_capacity: "INDEXES", # accepts INDEXES, TOTAL, NONE
-			  return_item_collection_metrics: "SIZE", # accepts SIZE, NONE
-			  expected: {"shortcode" => {exists: false}}
-			})
-			@created_at = time
-			@updated_at = time
-			@access_count = 0
-			return true
-		rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
-			raise ShortcodeErrors::ShortcodeAccessError.new("Item already exists, cannot overwrite only update or delete.")
-		rescue Aws::DynamoDB::Errors::ValidationException
-			raise ShortcodeErrors::IncompleteObjectError.new("Object must have both a name(shortcode) and a destination.")
-		end
-	end
+    # Removes the object from the database
+    #
+    # @return [Hash] collection of attributes from object destroyed
+    def destroy
+      resp = @dynamo_db_client.delete_item(
+        table_name: Petit.configuration.db_table_name, # required
+        key: { # required
+          'shortcode' => @name, # value <Hash,Array,String,Numeric,Boolean,IO,Set,nil>
+        },
+        return_values: 'ALL_OLD', # accepts NONE, ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW
+      )
+      resp.attributes
+    end
 
-	def update
-		time = Time.now.to_i
-		begin
-			resp = @dynamoDBclient.update_item({
-			  table_name: Petit.configuration.db_table_name, # required
-			  key: {
-				"shortcode" => @name
-			  },
-			  update_expression: "SET destination = :new_destination, ssl = :new_ssl, new_updated_at = :new_updated_at",
-			  expression_attribute_values: {
-			  	":new_destination" => @destination,
-			  	":new_ssl" => ssl?,
-			  	":new_updated_at" => time
-			  },
-			  return_values: "ALL_NEW",
-			  return_consumed_capacity: "INDEXES", # accepts INDEXES, TOTAL, NONE
-			  return_item_collection_metrics: "SIZE", # accepts SIZE, NONE
-			  condition_expression: "attribute_exists(shortcode)"
-			})
-			@updated_at = resp.attributes['updated_at'] if resp.attributes
-			resp.attributes
-		rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
-			raise ShortcodeErrors::ShortcodeAccessError.new("Cannot update item. Item does not exist.")
-		rescue Aws::DynamoDB::Errors::ValidationException
-			raise ShortcodeErrors::IncompleteObjectError.new("Object must have both a name(shortcode) and a destination.")
-		end
-	end
+    # Increment the access count for the object
+    #
+    # @return [Boolean] TRUE if the increase succeeded, FALSE if an error occurred
+    def hit
+      resp = @dynamo_db_client.update_item(
+        table_name: Petit.configuration.db_table_name,
+        key: { 'shortcode' => @name },
+        return_values: 'ALL_NEW',
+        return_consumed_capacity: 'NONE',
+        update_expression: 'SET access_count = access_count + :one',
+        expression_attribute_values: { ':one' => 1 }
+      )
+      @access_count = resp.attributes['access_count']
+      return true
+    rescue Aws::DynamoDB::Errors::ValidationException
+      return false
+    end
 
-	def destroy
-		resp = @dynamoDBclient.delete_item({
-		  table_name: Petit.configuration.db_table_name, # required
-		  key: { # required
-		    "shortcode" => @name, # value <Hash,Array,String,Numeric,Boolean,IO,Set,nil>
-		  },
-		  return_values: "ALL_OLD", # accepts NONE, ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW
-		})
-		return resp.attributes
-	end
+    # Returns basic JSON representation of the object
+    #
+    # @return [String] a JSON string representing the object
+    def to_json(*a)
+      {
+        name: @name,
+        created_at: @created_at,
+        updated_at: @updated_at,
+        access_count: @access_count,
+        destination: @destination,
+        ssl: @ssl
+      }.to_json(*a)
+    end
 
-	def hit
-		begin
-			resp = @dynamoDBclient.update_item({
-			  table_name: Petit.configuration.db_table_name, # required
-			  key: { # required
-			    "shortcode" => @name, # value <Hash,Array,String,Numeric,Boolean,IO,Set,nil>
-			  },
-			  return_values: "ALL_NEW", # accepts NONE, ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW
-			  return_consumed_capacity: "NONE", # accepts INDEXES, TOTAL, NONE
-			  update_expression: "SET access_count = access_count + :one",
-			  expression_attribute_values: {
-			    ":one" => 1, # value <Hash,Array,String,Numeric,Boolean,IO,Set,nil>
-			  },
-			})
-			@access_count = resp.attributes["access_count"]
-			return true
-		rescue Aws::DynamoDB::Errors::ValidationException
-			return false
-		end
-	end
+    # Finds and returns a Shortcode object by its name
+    #
+    # @param name [String] the value to search for
+    # @return [Shortcode] if matching record is found
+    # @return [Nil] if no matching record is found
+    def self.find(name)
+      dynamo_db_client = Aws::DynamoDB::Client.new
 
-	def to_json(*a)
-	  {
-	  	name: @name,
-	  	created_at: @created_at,
-	  	updated_at: @updated_at,
-	  	access_count: @access_count,
-	  	destination: @destination,
-	  	ssl: @ssl
-	  }.to_json(*a)
-	end
+      resp = dynamo_db_client.get_item(
+        table_name: Petit.configuration.db_table_name,
+        key: { 'shortcode' => name.to_s.downcase },
+        consistent_read: false,
+        return_consumed_capacity: 'NONE'
+      )
 
-	def self.find(name)
-		dynamoDBclient = Aws::DynamoDB::Client.new
+      return nil if resp.item.nil?
 
-		resp = dynamoDBclient.get_item({
-		  table_name: Petit.configuration.db_table_name, # required
-		  key: { # required
-		    "shortcode" => name.to_s.downcase, # value <Hash,Array,String,Numeric,Boolean,IO,Set,nil>
-		  },
-		  consistent_read: false,
-		  return_consumed_capacity: "NONE", # accepts INDEXES, TOTAL, NONE
-		})
+      new(resp.item)
+    end
 
-		if resp.item == nil
-			return nil
-		else
-			return self.new(resp.item)
-		end
-	end
+    # Alias to the {find} method
+    #
+    # @param name [String] the value to search for
+    # @return [Shortcode] if matching record is found
+    # @return [Nil] if no matching record is found   
+    def self.find_by_name(name)
+      find(name)
+    end
 
-	def self.find_by_name(name)
-		return self.find(name)
-	end
+    # Finds and returns an array of Shortcode objects by their destination
+    #
+    # @param destination [String] the value to search for
+    # @return [Array<Shortcode>] zero or more shortcode results for the search
+    def self.find_by_destination(destination)
+      dynamo_db_client = Aws::DynamoDB::Client.new
 
-	def self.find_by_destination(destination)
-		dynamoDBclient = Aws::DynamoDB::Client.new
+      resp = dynamo_db_client.query(
+        table_name: Petit.configuration.db_table_name,
+        index_name: 'destinationIndex',
+        select: 'ALL_PROJECTED_ATTRIBUTES',
+        consistent_read: false,
+        return_consumed_capacity: 'NONE',
+        key_condition_expression: 'destination = :destinationQuery',
+        expression_attribute_values: {
+          ':destinationQuery' => destination.to_s.downcase
+        }
+      )
+      resp.items.map { |item| new(item) }
+    end
 
-		resp = dynamoDBclient.query({
-		  table_name: Petit.configuration.db_table_name, # required
-		  index_name: "destinationIndex",
-		  select: "ALL_PROJECTED_ATTRIBUTES", # accepts ALL_ATTRIBUTES, ALL_PROJECTED_ATTRIBUTES, SPECIFIC_ATTRIBUTES, COUNT
-		  consistent_read: false,
-		  return_consumed_capacity: "NONE", # accepts INDEXES, TOTAL, NONE
-		  key_condition_expression: "destination = :destinationQuery",
-		  expression_attribute_values: {
-		    ":destinationQuery" => destination.to_s.downcase, # value <Hash,Array,String,Numeric,Boolean,IO,Set,nil>
-		  },
-		})
-		resp.items.map {|item| self.new(item)}
-	end
+    # Provides an available randomized string to use as a name for a shortcode.
+    # If an available name is not immediately found the length
+    # will be increased until an available name is found.
+    #
+    # @param size [Integer] minimum number of characters to return
+    # @return [String] an available name
+    def self.suggest(size = 6)
+      return nil unless size > 0
+      suggestion = generate_random_string(size)
+      return suggestion if find_by_name(suggestion).nil?
+      suggest(size + 1)
+    end
 
-	def self.suggest(size = 6)
-		unless size > 0
-			return nil
-		end
+    # Private method called by initialize for mapping parameters from a hash to
+    #   object parameters
+    #
+    # @param params [HashWithIndifferentAccess] is a collection of values to be
+    #   validated and applied to the object instance
+    def create_from_params(params)
+      self.name = params[:name] || params[:shortcode]
+      self.destination = params[:destination]
+      self.ssl = params[:ssl]
+      @access_count = params[:access_count] || nil
+      @created_at = Time.at(params[:created_at]) if params[:created_at]
+      @updated_at = Time.at(params[:updated_at]) if params[:updated_at]
+    end
 
-		suggestion = generate_random_string(size)
-		
-		if find_by_name(suggestion) == nil
-			return suggestion
-		else
-			suggest(size + 1)
-		end
-	end
+    private :create_from_params
 
-	private
+    # Generates a random string from a specific set of characters
+    #
+    # @param size [Integer] specifies how many characters the resulting string should contain
+    # @return [String] a random string of characters from the specified set of characters.
+    def self.generate_random_string(size)
+      charset = %w( 2 3 4 6 7 9 a c d e f g h j k m n p q r t w x y z)
+      (0...size).map { charset.to_a[rand(charset.size)] }.join
+    end
 
-	def self.generate_random_string(size)
-		charset = %w{ 2 3 4 6 7 9 a c d e f g h j k m n p q r t w x y z}
-		(0...size).map{ charset.to_a[rand(charset.size)] }.join
-	end
-end
+    private_class_method :generate_random_string
+  end
 
-module ShortcodeErrors
-	class ShortcodeAccessError < StandardError
-	end
-	class IncompleteObjectError < StandardError
-	end
+  # Shortcode exception class that indicates a database access exception,
+  # these are usually raised when access to a record is impossible or
+  # when access is denied.
+  class ShortcodeAccessError < StandardError
+  end
+
+  # Shortcode exception class that indicates that an incomplete record
+  # has been submitted to the database, these should be raised when an
+  # object fails validation
+  class IncompleteObjectError < StandardError
+  end
 end
