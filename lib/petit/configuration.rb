@@ -1,5 +1,5 @@
+# Petit module encapsulates the Petit URL Shortener application
 module Petit
-  
   # Adds a configuration attribute to the Petit module.
   class << self
     attr_accessor :configuration
@@ -13,7 +13,6 @@ module Petit
     self.configuration ||= Configuration.new
     yield(configuration) if block_given?
   end
-
 
   # Clear the configuration.
   def self.reset

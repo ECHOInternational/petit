@@ -154,31 +154,6 @@ describe Petit::Shortcode do
     end
   end
 
-  it { is_expected.to respond_to(:to_json) }
-  describe '#to_json' do
-    shortcode = Petit::Shortcode.new(
-      name: 'testjsonoutput',
-      destination: 'www.json.me',
-      ssl: true
-    )
-    it 'returns a string' do
-      expect(shortcode.to_json).to be_a(String)
-    end
-    it 'can be parsed as JSON' do
-      expect do
-        JSON.parse(shortcode.to_json)
-      end.to_not raise_error
-    end
-    it 'has a name' do
-      output = JSON.parse(shortcode.to_json)
-      expect(output).to include 'name'
-    end
-    it 'has a name value that matches that of the object' do
-      output = JSON.parse(shortcode.to_json)
-      expect(output['name']).to eq shortcode.name
-    end
-  end
-
   it { is_expected.to respond_to(:update) }
   describe '#update' do
     context 'is successful' do
@@ -193,6 +168,7 @@ describe Petit::Shortcode do
       shortcode.save
       shortcode.destination = 'www.test2.me'
       shortcode.ssl = false
+      sleep 3
       resp = shortcode.update
       it 'returns a hash' do
         expect(resp).to be_a(Hash)
@@ -386,7 +362,7 @@ describe Petit::Shortcode do
         shortcode.save
         expect { shortcode.hit }.to change { shortcode.access_count }.from(0).to(1)
       end
-      it 'returns true' do
+      it 'returns the new hit count' do
         shortcode = Petit::Shortcode.new(
           name: 'toincrement',
           destination: 'www.increment.me'
@@ -394,7 +370,7 @@ describe Petit::Shortcode do
         shortcode.destroy
         shortcode.save
         resp = shortcode.hit
-        expect(resp).to be true
+        expect(resp).to eq 1
       end
     end
 
@@ -406,15 +382,6 @@ describe Petit::Shortcode do
         )
         shortcode.destroy
         expect { shortcode.hit }.to_not change { shortcode.access_count }
-      end
-      it 'returns false' do
-        shortcode = Petit::Shortcode.new(
-          name: 'tonotincrement',
-          destination: 'www.donotincrement.me'
-        )
-        shortcode.destroy
-        resp = shortcode.hit
-        expect(resp).to be false
       end
     end
   end

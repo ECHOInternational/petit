@@ -3,7 +3,7 @@ module Petit
   class JSONapiParser
     # Required method from Rack::Parsers that encapsulates the logic for parsing the request body.
     # This parser simply strips off everything except the params that make up a Shortcode object.
-    # This allows the JSON body to be converted to params which will behave just just form parameters.
+    # This allows the JSON body to be converted to params which will behave like form parameters.
     #
     # @param body [Object] the request body is passed to the call method
     # @return [Hash] key-value pairs for the attributes
