@@ -1,9 +1,6 @@
 require 'sinatra/base'
 require 'rack/parser'
 require_relative 'jsonapiparser'
-require 'pp'
-require 'json'
-require 'pry'
 
 module Petit
   # Sinatra application class to serve HTTP API requests

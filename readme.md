@@ -15,7 +15,36 @@ Or install it yourself as:
 
     $ gem install petit
 
+## Environment Variables
+Petit is designed to be a Twelve Factor app and therefore all configuration
+should be done using environment variables.
 
+### Amazon Web Services:
+
+To use the default DynamoDB you'll need all of the AWS credentials. These should be
+set automatically if you're deploying to OPSWORKS or another kind of EC2 instance.
+
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_REGION
+
+### These variables set the configuration for the Petit app.
+- DB_TABLE_NAME (Name of the database to create/use)
+- API_BASE_URL (Ususally a HTTPS address with some security applied)
+- SERVICE_BASE_URL (Public base URL like 'http://bit.ly' )
+- NOT_FOUND_DESTINATION (Optional Address where public requests that result in 404 will be sent.)
+
+## Database Migration
+
+The default installation of petit relies on DynamoDB, this can be replaced if you have the need.
+In order to bootstrap the application you will need to ensure that the database has been created
+in your AWS account. An idempotent pre-migration deploy hook has been included to provide this
+functionality for you. This is especially useful if you're deploying to OPSWORKS.\
+
+See deploy/before_migrate.rb
+
+Since DynamoDB doesn't require fields to be explicitly created or destroyed other migrations are
+not currently needed or supported.
 
 ## About The Author(s)
 
@@ -35,7 +64,7 @@ If you find a problem with this code or would like to contribute an improvement 
 
 If you're a developer that would like to help solve world hunger problems with some of your spare time, we are always looking for talented volunteers. Contact Nate Flood by email: nate [at] echonet [dot] org
 
-1. Fork it ( https://github.com/ECHOInternational/your_membership/fork )
+1. Fork it ( https://github.com/ECHOInternational/petit/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
