@@ -1,4 +1,4 @@
-# require 'aws-sdk'
+require 'aws-sdk'
 
 # We don't need full database migration for a nosql database, but we do want to make sure
 # the database has been created according to the configuration.
@@ -7,6 +7,11 @@
 # NOTE: if you are hard-coding the table name in the config file (WHY?) you'll need to
 # change this to match before you deploy.
 table_name = ENV['DB_TABLE_NAME'] || new_resource.environment['DB_TABLE_NAME']
+
+log 'message' do
+	message 'Checking for, and creating table:' + table_name
+	level :info
+end
 
 table_definition = {
   attribute_definitions: [ # required
@@ -61,27 +66,35 @@ table_definition = {
   }
 }
 
+dynamo_db_client = AWS::DynamoDB::Client.new
+
 log 'message' do
-	message 'A message to add to the log.'
+	message 'Created DynamoDB client'
 	level :info
 end
 
-# dynamo_db_client = Aws::DynamoDB::Client.new
 
-# puts 'Creating Table'
-# begin
-#   dynamo_db_client.create_table(table_definition)
-# rescue Aws::DynamoDB::Errors::ResourceInUseException
-#   puts 'Table Exists'
-# end
+begin
+  dynamo_db_client.create_table(table_definition)
+rescue AWS::DynamoDB::Errors::ResourceInUseException
+  log 'message' do
+  	message 'Table Already Exists'
+  	level :info
+  end
+end
 
-# puts 'Checking Table'
-# begin
-#   dynamo_db_client.describe_table(
-#     table_name: table_definition[:table_name]
-#   )
-#   puts "Table Status #{resp.table.table_status}"
-#   puts 'We recommend setting up at least a Basic Alarm for this table in the AWS console.'
-# rescue Aws::DynamoDB::Errors::ResourceNotFoundException
-#   puts 'Table does not exist after attempting to create it. Check Configuration.'
-# end
+log 'message' do
+	message 'Checking Table'
+	level :info
+end
+
+begin
+  dynamo_db_client.describe_table(
+    table_name: table_definition[:table_name]
+  )
+rescue AWS::DynamoDB::Errors::ResourceNotFoundException
+  log 'failure' do
+	message 'Table Does Not Exist - Check Configurations'
+	level :warn
+	end
+end
