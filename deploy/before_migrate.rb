@@ -1,3 +1,7 @@
+chef_gem 'aws-sdk' do
+	action :upgrade
+end
+
 require 'aws-sdk'
 
 # We don't need full database migration for a nosql database, but we do want to make sure
@@ -66,7 +70,7 @@ table_definition = {
   }
 }
 
-dynamo_db_client = AWS::DynamoDB::Client.new
+dynamo_db_client = Aws::DynamoDB::Client.new
 
 log 'message' do
 	message 'Created DynamoDB client'
@@ -76,7 +80,7 @@ end
 
 begin
   dynamo_db_client.create_table(table_definition)
-rescue AWS::DynamoDB::Errors::ResourceInUseException
+rescue Aws::DynamoDB::Errors::ResourceInUseException
   log 'message' do
   	message 'Table Already Exists'
   	level :info
@@ -92,7 +96,7 @@ begin
   dynamo_db_client.describe_table(
     table_name: table_definition[:table_name]
   )
-rescue AWS::DynamoDB::Errors::ResourceNotFoundException
+rescue Aws::DynamoDB::Errors::ResourceNotFoundException
   log 'failure' do
 	message 'Table Does Not Exist - Check Configurations'
 	level :warn
