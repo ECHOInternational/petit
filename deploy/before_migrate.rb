@@ -61,7 +61,10 @@ table_definition = {
   }
 }
 
-CHEF::Log.debug('you should see this as a debug message.')
+log 'message' do
+	message 'A message to add to the log.'
+	level :info
+end
 
 # dynamo_db_client = Aws::DynamoDB::Client.new
 
