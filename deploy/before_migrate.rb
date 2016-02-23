@@ -1,6 +1,10 @@
 chef_gem 'aws-sdk' do
+	action :purge
+end
+
+chef_gem 'aws-sdk' do
 	version '~> 2'
-	action :upgrade
+	action :install
 end
 
 require 'aws-sdk'
