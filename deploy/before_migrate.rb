@@ -61,6 +61,8 @@ table_definition = {
   }
 }
 
+CHEF::Log.debug('you should see this as a debug message.')
+
 # dynamo_db_client = Aws::DynamoDB::Client.new
 
 # puts 'Creating Table'
@@ -80,5 +82,3 @@ table_definition = {
 # rescue Aws::DynamoDB::Errors::ResourceNotFoundException
 #   puts 'Table does not exist after attempting to create it. Check Configuration.'
 # end
-
-puts table_definition
