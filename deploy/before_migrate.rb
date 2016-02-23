@@ -1,3 +1,7 @@
+
+# At time of writing the OPSWORKS Chef implementation uses the V1 of the aws-sdk
+# we want the V2 so we purge out the one we don't want (or it interferes)
+# and we install the one we need locally to CHEF
 chef_gem 'aws-sdk' do
 	action :purge
 end
@@ -12,12 +16,24 @@ require 'aws-sdk'
 # We don't need full database migration for a nosql database, but we do want to make sure
 # the database has been created according to the configuration.
 
-# Get the name of our database from the environment. (|| from CHEF)
-# NOTE: if you are hard-coding the table name in the config file (WHY?) you'll need to
-# change this to match before you deploy.
+# Pull in the environment variables needed to create the database table
 table_name = ENV['DB_TABLE_NAME'] || new_resource.environment['DB_TABLE_NAME']
+aws_region = ENV['AWS_REGION'] || new_resource.environment['AWS_REGION']
+aws_access_key_id = ENV['AWS_ACCESS_KEY_ID'] || new_resource.env['AWS_ACCESS_KEY_ID']
+aws_secret_access_key = ENV['AWS_SECRET_ACCESS_KEY'] || new_resource.env['AWS_SECRET_ACCESS_KEY']
 
-region = ENV['AWS_REGION'] || new_resource.environment['AWS_REGION']
+dynamo_db_client = Aws::DynamoDB::Client.new(
+	region: aws_region,
+	access_key_id: aws_access_key_id,
+	secret_access_key: aws_secret_access_key
+)
+
+log 'message' do
+	message 'Created DynamoDB client'
+	level :info
+end
+
+
 
 log 'message' do
 	message 'Checking for, and creating table:' + table_name
@@ -76,14 +92,6 @@ table_definition = {
     stream_enabled: false
   }
 }
-
-dynamo_db_client = Aws::DynamoDB::Client.new(region: region)
-
-log 'message' do
-	message 'Created DynamoDB client'
-	level :info
-end
-
 
 begin
   dynamo_db_client.create_table(table_definition)
