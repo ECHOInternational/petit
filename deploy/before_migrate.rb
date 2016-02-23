@@ -17,6 +17,8 @@ require 'aws-sdk'
 # change this to match before you deploy.
 table_name = ENV['DB_TABLE_NAME'] || new_resource.environment['DB_TABLE_NAME']
 
+region = ENV['AWS_REGION'] || new_resource.environment['AWS_REGION']
+
 log 'message' do
 	message 'Checking for, and creating table:' + table_name
 	level :info
@@ -75,7 +77,7 @@ table_definition = {
   }
 }
 
-dynamo_db_client = Aws::DynamoDB::Client.new
+dynamo_db_client = Aws::DynamoDB::Client.new(region: region)
 
 log 'message' do
 	message 'Created DynamoDB client'
@@ -103,7 +105,7 @@ begin
   )
 rescue Aws::DynamoDB::Errors::ResourceNotFoundException
   log 'failure' do
-	message 'Table Does Not Exist - Check Configurations'
+	message 'Table Does Not Exist - Check Configuration'
 	level :warn
 	end
 end
