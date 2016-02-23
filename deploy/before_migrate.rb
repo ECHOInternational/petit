@@ -61,22 +61,24 @@ table_definition = {
   }
 }
 
-dynamo_db_client = Aws::DynamoDB::Client.new
+# dynamo_db_client = Aws::DynamoDB::Client.new
 
-puts 'Creating Table'
-begin
-  dynamo_db_client.create_table(table_definition)
-rescue Aws::DynamoDB::Errors::ResourceInUseException
-  puts 'Table Exists'
-end
+# puts 'Creating Table'
+# begin
+#   dynamo_db_client.create_table(table_definition)
+# rescue Aws::DynamoDB::Errors::ResourceInUseException
+#   puts 'Table Exists'
+# end
 
-puts 'Checking Table'
-begin
-  dynamo_db_client.describe_table(
-    table_name: table_definition[:table_name]
-  )
-  puts "Table Status #{resp.table.table_status}"
-  puts 'We recommend setting up at least a Basic Alarm for this table in the AWS console.'
-rescue Aws::DynamoDB::Errors::ResourceNotFoundException
-  puts 'Table does not exist after attempting to create it. Check Configuration.'
-end
+# puts 'Checking Table'
+# begin
+#   dynamo_db_client.describe_table(
+#     table_name: table_definition[:table_name]
+#   )
+#   puts "Table Status #{resp.table.table_status}"
+#   puts 'We recommend setting up at least a Basic Alarm for this table in the AWS console.'
+# rescue Aws::DynamoDB::Errors::ResourceNotFoundException
+#   puts 'Table does not exist after attempting to create it. Check Configuration.'
+# end
+
+puts table_definition
