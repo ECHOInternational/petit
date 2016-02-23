@@ -1,4 +1,5 @@
 chef_gem 'aws-sdk' do
+	version '~> 2'
 	action :upgrade
 end
 
