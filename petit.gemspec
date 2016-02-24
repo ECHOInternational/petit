@@ -25,14 +25,11 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rack-parser'
   spec.add_dependency 'unicorn'
 
-  spec.add_test_dependency 'rspec'
-  spec.add_test_dependency 'rack-test'
-  spec.add_test_dependency 'bundler', '~> 1.6'
-
   spec.add_development_dependency 'bundler', '~> 1.6'
   spec.add_development_dependency 'rake'
+  spec.add_development_dependency 'rspec'
+  spec.add_development_dependency 'rack-test'
   spec.add_development_dependency 'pry'
-
 
 
 
