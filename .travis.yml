@@ -13,3 +13,6 @@ notification:
       - nflood@echonet.org
     on_failure: change
     on_success: never
+
+before_install: gem install rspec
+before install: gem install rack-test
