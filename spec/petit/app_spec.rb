@@ -11,10 +11,14 @@ describe 'Petit App' do
     Petit::App
   end
 
-  Petit.configure
-
-  after(:each) do
+  before(:example) do
     Petit.reset
+    # Set configuration values using these environment variables.
+    Petit.configure do |config|
+      config.db_table_name = ENV['DB_TABLE_NAME']
+      config.api_base_url = ENV['API_BASE_URL']
+      config.service_base_url = ENV['SERVICE_BASE_URL']
+    end
   end
 
   describe "get '/'" do
@@ -45,6 +49,17 @@ describe 'Petit App' do
 
   describe "get ':/shortcode'" do
     context 'when the shortcode is found' do
+      before(:context) do
+        shortcode = Petit::Shortcode.new(
+          name: 'abc123',
+          destination: 'www.yahoo.com',
+          ssl: false
+        )
+
+        # Two step overwrite
+        shortcode.destroy
+        shortcode.save
+      end
       it 'redirects to the correct destination' do
         get '/abc123'
         expect(last_response).to be_redirect
@@ -54,7 +69,7 @@ describe 'Petit App' do
 
       it 'increments the access_count' do
         shortcode_pre = Petit::Shortcode.find('abc123')
-        get 'abc123'
+        get '/abc123'
         shortcode_post = Petit::Shortcode.find('abc123')
         expect(shortcode_post.access_count).to eq(shortcode_pre.access_count + 1)
       end
@@ -537,9 +552,11 @@ describe 'Petit App' do
     end
     context 'if the shortcode is found' do
       context 'if the updated data is valid' do
-        shortcode = Petit::Shortcode.new(name: 'abc124', destination: 'www.yahoo.com', ssl: true)
-        shortcode.destroy
-        shortcode.save
+        before(:example) do
+          shortcode = Petit::Shortcode.new(name: 'abc124', destination: 'www.yahoo.com', ssl: true)
+          shortcode.destroy
+          shortcode.save
+        end
 
         it 'returns 200' do
           put(
@@ -610,9 +627,11 @@ describe 'Petit App' do
         end
       end
       context 'if the updated data is invalid' do
-        shortcode = Petit::Shortcode.new(name: 'abc124', destination: 'www.yahoo.com', ssl: true)
-        shortcode.destroy
-        shortcode.save
+        before(:example) do
+          shortcode = Petit::Shortcode.new(name: 'abc124', destination: 'www.yahoo.com', ssl: true)
+          shortcode.destroy
+          shortcode.save
+        end
 
         it 'throws a 400 (Bad Request) error' do
           put '/api/v1/shortcodes/abc124', { 'destination' => '' }, 'HTTPS' => 'on'

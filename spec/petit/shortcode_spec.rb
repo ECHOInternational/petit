@@ -2,8 +2,15 @@ require 'petit'
 require 'spec_helper'
 
 describe Petit::Shortcode do
+  Petit.reset
   # be sure there is a configuration to access.
-  Petit.configure
+  # Set configuration values using these environment variables
+  Petit.configure do |config|
+    config.db_table_name = ENV['DB_TABLE_NAME']
+    config.api_base_url = ENV['API_BASE_URL']
+    config.service_base_url = ENV['SERVICE_BASE_URL']
+  end
+
   describe '.suggest' do
     it 'responds to suggest' do
       expect(Petit::Shortcode).to respond_to(:suggest)

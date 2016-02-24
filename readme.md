@@ -1,5 +1,8 @@
 Petit: Ruby Url Shortening Service Based on AWS
 ===========================================
+[![Build Status](https://travis-ci.org/ECHOInternational/petit.svg?branch=master)](https://travis-ci.org/ECHOInternational/petit)
+
+[![Code Climate](https://codeclimate.com/repos/56cd10e851754700680025d7/badges/f0b009aae35a441fd6bf/gpa.svg)](https://codeclimate.com/repos/56cd10e851754700680025d7/feed)
 
 ## Installation
 
@@ -21,8 +24,7 @@ should be done using environment variables.
 
 ### Amazon Web Services:
 
-To use the default DynamoDB you'll need all of the AWS credentials. These should be
-set automatically if you're deploying to OPSWORKS or another kind of EC2 instance.
+To use the default DynamoDB you'll need all of the AWS credentials.
 
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
@@ -36,12 +38,12 @@ set automatically if you're deploying to OPSWORKS or another kind of EC2 instanc
 
 ## Database Migration
 
-The default installation of petit relies on DynamoDB, this can be replaced if you have the need.
+The default installation of petit relies on DynamoDB. (This can be replaced if you have the need.)
 In order to bootstrap the application you will need to ensure that the database has been created
-in your AWS account. An idempotent pre-migration deploy hook has been included to provide this
-functionality for you. This is especially useful if you're deploying to OPSWORKS.\
-
-See deploy/before_migrate.rb
+in your AWS account. An idempotent rake task exists in the rakefile under db:migrate. After the
+environment variables have been set, you can run rake db:migrate to set up the requisite DynamoDB
+database on your AWS account. If you're deploying to AWS OPSWORKS this rake task will be run each
+time you select "migrate database" during deploy.
 
 Since DynamoDB doesn't require fields to be explicitly created or destroyed other migrations are
 not currently needed or supported.

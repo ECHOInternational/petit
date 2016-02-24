@@ -1,0 +1,15 @@
+language: ruby
+cache: bundler
+
+rvm:
+  - ruby
+  - 2.0.0
+
+script: 'rspec'
+
+notification:
+  email:
+    recipients:
+      - nflood@echonet.org
+    on_failure: change
+    on_success: never

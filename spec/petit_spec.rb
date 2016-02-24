@@ -2,6 +2,10 @@ require 'spec_helper'
 require 'petit'
 
 describe Petit do
+  before(:context) do
+    Petit.reset
+  end
+
   it 'has default configuration values' do
     expect(Petit.configuration.db_table_name).to eq('shortcodes')
   end
