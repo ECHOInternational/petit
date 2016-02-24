@@ -19,8 +19,8 @@ require 'aws-sdk'
 # Pull in the environment variables needed to create the database table
 table_name = ENV['DB_TABLE_NAME'] || new_resource.environment['DB_TABLE_NAME']
 aws_region = ENV['AWS_REGION'] || new_resource.environment['AWS_REGION']
-aws_access_key_id = ENV['AWS_ACCESS_KEY_ID'] || new_resource.env['AWS_ACCESS_KEY_ID']
-aws_secret_access_key = ENV['AWS_SECRET_ACCESS_KEY'] || new_resource.env['AWS_SECRET_ACCESS_KEY']
+aws_access_key_id = ENV['AWS_ACCESS_KEY_ID'] || new_resource.environment['AWS_ACCESS_KEY_ID']
+aws_secret_access_key = ENV['AWS_SECRET_ACCESS_KEY'] || new_resource.environment['AWS_SECRET_ACCESS_KEY']
 
 dynamo_db_client = Aws::DynamoDB::Client.new(
 	region: aws_region,
