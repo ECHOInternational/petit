@@ -36,17 +36,15 @@ To use the default DynamoDB you'll need all of the AWS credentials.
 - SERVICE_BASE_URL (Public base URL like 'http://bit.ly' )
 - NOT_FOUND_DESTINATION (Optional Address where public requests that result in 404 will be sent.)
 
-## Database Migration
+## Database Setup
 
 The default installation of petit relies on DynamoDB. (This can be replaced if you have the need.)
 In order to bootstrap the application you will need to ensure that the database has been created
-in your AWS account. An idempotent rake task exists in the rakefile under db:migrate. After the
-environment variables have been set, you can run rake db:migrate to set up the requisite DynamoDB
-database on your AWS account. If you're deploying to AWS OPSWORKS this rake task will be run each
-time you select "migrate database" during deploy.
+in your AWS account. An idempotent rake task exists in the rakefile under db:setup. After the
+environment variables have been set, you can run rake db:setup to set up the requisite DynamoDB
+database on your AWS account.
 
-Since DynamoDB doesn't require fields to be explicitly created or destroyed other migrations are
-not currently needed or supported.
+Since DynamoDB doesn't require fields to be explicitly created or destroyed migrations are not currently needed or supported.
 
 ## About The Author(s)
 

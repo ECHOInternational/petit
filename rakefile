@@ -3,9 +3,8 @@ require "bundler/gem_tasks"
 require 'aws-sdk'
 
 namespace :db do 
-	task :migrate do		
-		# We don't need full database migration for a nosql database, but we do want to make sure
-		# the database has been created according to the configuration.
+	task :setup do
+		# Create the database if it doesn't exist.
 
 		# Pull in the environment variables needed to create the database table
 		table_name = ENV['DB_TABLE_NAME'] #|| new_resource.environment['DB_TABLE_NAME']
