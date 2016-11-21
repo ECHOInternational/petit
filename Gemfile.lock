@@ -6,34 +6,35 @@ PATH
       aws-sdk (~> 2)
       jsonapi-serializers
       rack-parser
+      rake
       sinatra
       unicorn
 
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.2.5.1)
+    activesupport (4.2.7.1)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    aws-sdk (2.2.19)
-      aws-sdk-resources (= 2.2.19)
-    aws-sdk-core (2.2.19)
+    aws-sdk (2.5.3)
+      aws-sdk-resources (= 2.5.3)
+    aws-sdk-core (2.5.3)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.2.19)
-      aws-sdk-core (= 2.2.19)
+    aws-sdk-resources (2.5.3)
+      aws-sdk-core (= 2.5.3)
     coderay (1.1.1)
     diff-lcs (1.2.5)
     i18n (0.7.0)
-    jmespath (1.1.3)
+    jmespath (1.3.1)
     json (1.8.3)
     jsonapi-serializers (0.6.1)
       activesupport
     kgio (2.10.0)
     method_source (0.8.2)
-    minitest (5.8.4)
+    minitest (5.9.1)
     pry (0.10.3)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -45,8 +46,8 @@ GEM
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
-    raindrops (0.15.0)
-    rake (10.5.0)
+    raindrops (0.16.0)
+    rake (11.2.2)
     rspec (3.4.0)
       rspec-core (~> 3.4.0)
       rspec-expectations (~> 3.4.0)
@@ -66,12 +67,11 @@ GEM
       tilt (>= 1.3, < 3)
     slop (3.6.0)
     thread_safe (0.3.5)
-    tilt (2.0.2)
+    tilt (2.0.5)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    unicorn (5.0.1)
+    unicorn (5.1.0)
       kgio (~> 2.6)
-      rack
       raindrops (~> 0.7)
 
 PLATFORMS
@@ -82,5 +82,7 @@ DEPENDENCIES
   petit!
   pry
   rack-test
-  rake
   rspec
+
+BUNDLED WITH
+   1.12.5
