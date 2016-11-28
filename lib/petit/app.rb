@@ -217,7 +217,7 @@ module Petit
     # @return [String] the suggested shortcode name
     def return_suggestion
       suggestion = Petit::Shortcode.suggest
-      if request.accept? 'application/json'
+      if request.accept?('application/json') || request.accept?('application/vnd.api+json')
         response.headers['Content-Type'] = 'application/vnd.api+json'
         json_body = {
           data: {
@@ -239,7 +239,7 @@ module Petit
     # @return [String] a JSON representation of the object if the ACCEPT header requests JSON
     #  otherwise a plain-text representation of the object
     def return_shortcode(shortcode)
-      if request.accept? 'application/json'
+      if request.accept?('application/json') || request.accept?('application/vnd.api+json')
         response.headers['Content-Type'] = 'application/vnd.api+json'
         JSONAPI::Serializer.serialize(shortcode).to_json
       else
@@ -253,7 +253,7 @@ module Petit
     #  Note that when text/html is requested and error message is displayed.
     # @todo Perhaps this should display something instead of an error for plaintext?
     def return_shortcode_collection(shortcodes)
-      if request.accept? 'application/json'
+      if request.accept?('application/json') || request.accept?('application/vnd.api+json')
         response.headers['Content-Type'] = 'application/vnd.api+json'
         JSONAPI::Serializer.serialize(shortcodes, is_collection: true).to_json
       else
@@ -273,7 +273,7 @@ module Petit
     def return_error(opts = {})
       opts[:error_code] = opts[:error_code] || 500
       opts[:message] =  opts[:message] || 'An Internal Error Occurred'
-      if request.accept? 'application/json'
+      if request.accept?('application/json') || request.accept?('application/vnd.api+json')
         response.headers['Content-Type'] = 'application/vnd.api+json'
         halt opts[:error_code], build_json_error(opts)
       else

@@ -143,6 +143,34 @@ describe 'Petit App' do
         expect(json_response['data']['attributes']['name']).to be_a String
       end
     end
+    context 'when vnd.api+json is requested' do
+      it "returns Content-Type of 'application/vnd.api+json'" do
+        header 'Accept', 'application/vnd.api+json'
+        get '/api/v1/suggestion', {}, 'HTTPS' => 'on'
+        expect(last_response.header['Content-Type']).to include 'application/vnd.api+json'
+      end
+      it 'returns a json object' do
+        header 'Accept', 'application/vnd.api+json'
+        get '/api/v1/suggestion', {}, 'HTTPS' => 'on'
+        expect do
+          JSON.parse(last_response.body)
+        end.to_not raise_error
+      end
+      it 'returns a properly formatted vnd.api+json object' do
+        header 'Accept', 'application/vnd.api+json'
+        get '/api/v1/suggestion', {}, 'HTTPS' => 'on'
+        json_response = JSON.parse(last_response.body)
+        expect(json_response).to include 'data'
+        expect(json_response['data']).to be_a Hash
+        expect(json_response['data']).to include 'type'
+        expect(json_response['data']['type']).to eq 'suggestion'
+        expect(json_response['data']['id']).to be_a String
+        expect(json_response['data']).to include 'attributes'
+        expect(json_response['data']['attributes']).to include 'name'
+        expect(json_response['data']['attributes']['name'].length).to be > 0
+        expect(json_response['data']['attributes']['name']).to be_a String
+      end
+    end
     context 'when plaintext is requested' do
       it 'returns a string' do
         header 'Accept', 'text/html'
