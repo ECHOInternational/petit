@@ -169,7 +169,7 @@ module Petit
         return_error(error_code: 404, message: 'Record does not exist.')
       else
         shortcode.destroy
-        if request.accept? 'application/json'
+        if request.accept?('application/json') || request.accept?('application/vnd.api+json')
           response.headers['Content-Type'] = 'application/vnd.api+json'
           '{}'
         else
