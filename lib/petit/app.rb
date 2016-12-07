@@ -58,6 +58,22 @@ module Petit
       return_suggestion
     end
 
+    # @method api_head_shortcode
+    # @overload head 'api/v1/shortcodes/:shortcode'
+    # @param shortcode [String] the shortcode to find in the database
+    # Returns 200 if found 404 if not
+    head '/api/v1/shortcodes/:shortcode' do
+      require_ssl
+      
+      shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
+
+      if shortcode.nil?
+        404
+      else
+        200
+      end
+    end
+
     # @method api_get_shortcode
     # @overload get '/api/v1/shortcodes/:shortcode'
     # @param shortcode [String] the shortcode to find in the database

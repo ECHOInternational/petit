@@ -292,6 +292,35 @@ describe 'Petit App' do
     end
   end
 
+  describe "head '/api/v1/shortcodes/:shortcode" do
+    context 'when ssl is not employed' do
+      it "returns error type 403 'HTTPS Required'" do
+        head '/api/v1/shortcodes/abc123'
+        expect(last_response.status).to eq 403
+      end
+    end
+    context "when the shortcode is not present" do
+      it "returns 404" do
+        head '/api/v1/shortcodes/342jklh23', {},'HTTPS' => 'on'
+        expect(last_response.status).to eq 404
+      end
+      it "has no body" do
+        head '/api/v1/shortcodes/342jklh23', {},'HTTPS' => 'on'
+        expect(last_response.body).to be_empty
+      end
+    end
+    context "when the shortcode is present" do
+      it "returns 200" do
+        head '/api/v1/shortcodes/abc123', {},'HTTPS' => 'on'
+        expect(last_response.status).to eq 200
+      end
+      it "has no body" do
+        head '/api/v1/shortcodes/abc123', {},'HTTPS' => 'on'
+        expect(last_response.body).to be_empty
+      end
+    end
+  end
+
   describe "get '/api/v1/shortcodes/:shortcode'" do
     context 'when ssl is not employed' do
       it "returns error type 403 'HTTPS Required'" do
