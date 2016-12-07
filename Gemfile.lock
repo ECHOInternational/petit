@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    petit (0.2.0)
+    petit (0.3.0)
       activesupport (~> 4.2.3)
       aws-sdk (~> 2)
       jsonapi-serializers
