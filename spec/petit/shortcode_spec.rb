@@ -37,15 +37,11 @@ describe Petit::Shortcode do
 
   context 'instantiated with initializer' do
     let(:shortcode) do
-      Petit::Shortcode.new(name: 'ABC123', destination: 'wWw.Google.cOm', ssl: true)
+      Petit::Shortcode.new(name: 'ABC123', destination: 'www.google.com', ssl: true)
     end
 
     it 'downcases the shortcode' do
       expect(shortcode.name).to eq('abc123')
-    end
-
-    it 'downcases the destination' do
-      expect(shortcode.destination).to eq('www.google.com')
     end
 
     it 'can set shortcode' do
@@ -53,7 +49,7 @@ describe Petit::Shortcode do
     end
 
     it 'can set destination' do
-      expect { shortcode.destination = 'www.YAHOO.com' }
+      expect { shortcode.destination = 'www.yahoo.com' }
         .to change { shortcode.destination }
         .from('www.google.com').to('www.yahoo.com')
     end

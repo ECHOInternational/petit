@@ -36,13 +36,12 @@ module Petit
       @name = @name.downcase if @name
     end
 
-    # Sets the destination of the Petit::Shortcode object and ensures it is all lowercase
+    # Sets the destination of the Petit::Shortcode object
     #
     # @param destination [String] the destination to assign the object
     # @return [String], the destination of the object
     def destination=(destination)
       @destination = destination
-      @destination = @destination.downcase if @destination
     end
 
     # Sets the ssl (https) flag for the Petit::Shortcode object
