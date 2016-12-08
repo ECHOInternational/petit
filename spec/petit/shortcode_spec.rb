@@ -48,6 +48,10 @@ describe Petit::Shortcode do
       expect { shortcode.name = '123ABC' }.to change { shortcode.name }.from('abc123').to('123abc')
     end
 
+    it 'removes disallowed characters' do
+      expect { shortcode.name = '4*5!6 a/n+?f'}.to change { shortcode.name}.from('abc123').to('456anf')
+    end
+
     it 'can set destination' do
       expect { shortcode.destination = 'www.yahoo.com' }
         .to change { shortcode.destination }

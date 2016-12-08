@@ -27,13 +27,15 @@ module Petit
       create_from_params(params.with_indifferent_access)
     end
 
-    # Sets the name of the Petit::Shortcode object and ensures it is all lowercase
-    #
+    # Sets the name of the Petit::Shortcode object 
+    # and ensures it is all lowercase and does not contain anything but
+    # numbers, letters, and the - (hyphen/dash)
     # @param name [String] the name to assign the object
     # @return [String] the name of the object
     def name=(name)
       @name = name
       @name = @name.downcase if @name
+      @name = @name.gsub(/[^a-z0-9-]/, '') if @name
     end
 
     # Sets the destination of the Petit::Shortcode object
