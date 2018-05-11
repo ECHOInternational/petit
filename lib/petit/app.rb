@@ -9,8 +9,13 @@ module Petit
   # rubocop:disable Metrics/ClassLength
   class App < Sinatra::Application
     use Rack::Parser, parsers: {
-      'application/vnd.api\+json' => JSONapiParser.new
+      'application/vnd.api+json' => JSONapiParser.new
     }
+    # use Rack::Parser, parsers: {
+    #   'application/vnd.api+json' => proc { |data|
+    #     JSON.parse(data).dig('data', 'attributes')
+    #   }
+    # }
 
     # @method get_root
     # @overload get '/'
@@ -40,7 +45,6 @@ module Petit
     # Parameters can either be submitted as form values or in the body as JSONAPI objects
     get '/api/v1/shortcodes' do
       require_ssl
-
       if params[:destination]
         shortcodes = Petit::Shortcode.find_by_destination(params[:destination])
         return_shortcode_collection(shortcodes)
@@ -158,7 +162,9 @@ module Petit
     # If parameter values do not pass validation a 400 error is returned
     put '/api/v1/shortcodes/:shortcode' do
       require_ssl
-
+      # if request.content_type == "application/vnd.api+json"
+      #   binding.pry
+      # end
       shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
       if shortcode.nil?
         return_error(error_code: 404, message: 'Record does not exist.')
