@@ -1,40 +1,42 @@
 PATH
   remote: .
   specs:
-    petit (0.3.0)
+    petit (0.4.0)
       activesupport (~> 4.2.3)
       aws-sdk (~> 2)
       json (~> 2)
       jsonapi-serializers
       rack-parser
       rake
+      rqrcode
       sinatra
       unicorn
 
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.2.10)
+    activesupport (4.2.11)
       i18n (~> 0.7)
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    aws-sdk (2.11.48)
-      aws-sdk-resources (= 2.11.48)
-    aws-sdk-core (2.11.48)
+    aws-sdk (2.11.230)
+      aws-sdk-resources (= 2.11.230)
+    aws-sdk-core (2.11.230)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.48)
-      aws-sdk-core (= 2.11.48)
-    aws-sigv4 (1.0.2)
+    aws-sdk-resources (2.11.230)
+      aws-sdk-core (= 2.11.230)
+    aws-sigv4 (1.0.3)
+    chunky_png (1.3.11)
     coderay (1.1.1)
-    concurrent-ruby (1.0.5)
+    concurrent-ruby (1.1.4)
     diff-lcs (1.2.5)
     i18n (0.9.5)
       concurrent-ruby (~> 1.0)
     jmespath (1.4.0)
-    json (2.1.0)
-    jsonapi-serializers (1.0.0)
+    json (2.2.0)
+    jsonapi-serializers (1.0.1)
       activesupport
     kgio (2.11.2)
     method_source (0.8.2)
@@ -51,7 +53,9 @@ GEM
     rack-test (0.6.3)
       rack (>= 1.0)
     raindrops (0.19.0)
-    rake (12.3.1)
+    rake (12.3.2)
+    rqrcode (0.10.1)
+      chunky_png (~> 1.0)
     rspec (3.4.0)
       rspec-core (~> 3.4.0)
       rspec-expectations (~> 3.4.0)
@@ -71,10 +75,10 @@ GEM
       tilt (>= 1.3, < 3)
     slop (3.6.0)
     thread_safe (0.3.6)
-    tilt (2.0.8)
+    tilt (2.0.9)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
-    unicorn (5.4.0)
+    unicorn (5.4.1)
       kgio (~> 2.6)
       raindrops (~> 0.7)
 

@@ -287,6 +287,17 @@ describe 'Petit App' do
             expect(json_response['data'][0]['meta']).to include 'generated_link'
             expect(json_response['data'][0]['meta']['generated_link']).to be_kind_of String
           end
+          it 'returns child objects with a qr_code in the metadata' do
+            header 'Accept', 'application/json'
+            get(
+              '/api/v1/shortcodes',
+              { 'destination' => 'www.yahoo.com' },
+              'HTTPS' => 'on'
+            )
+            json_response = JSON.parse(last_response.body)
+            expect(json_response['data'][0]['meta']).to include 'qr_code'
+            expect(json_response['data'][0]['meta']['qr_code']).to be_kind_of String
+          end
         end
       end
     end
@@ -359,6 +370,12 @@ describe 'Petit App' do
           expect(json_response['data']['meta']).to include 'generated_link'
           expect(json_response['data']['meta']['generated_link'])
             .to eq Petit.configuration.service_base_url + '/abc123'
+        end
+        it 'returns a url to the generated shortcode' do
+          get '/api/v1/shortcodes/abc123', {}, 'HTTPS' => 'on'
+          json_response = JSON.parse(last_response.body)
+          expect(json_response['data']['meta']).to include 'qr_code'
+          expect(json_response['data']['meta']['qr_code']).to be_kind_of String
         end
         it 'downcases the shortcode' do
           get '/api/v1/shortcodes/ABC123', {}, 'HTTPS' => 'on'
