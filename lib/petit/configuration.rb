@@ -21,7 +21,7 @@ module Petit
 
   # Configuration class for Petit.
   class Configuration
-    attr_accessor :db_table_name, :not_found_destination, :api_base_url, :service_base_url
+    attr_accessor :db_table_name, :not_found_destination, :api_base_url, :service_base_url, :require_ssl
 
     # Default configuration values
     def initialize
@@ -29,6 +29,7 @@ module Petit
       @not_found_destination = nil
       @api_base_url = 'http://localhost'
       @service_base_url = 'http://change.me'
+      @require_ssl = true
     end
   end
 end

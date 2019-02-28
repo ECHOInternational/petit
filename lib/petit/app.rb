@@ -202,6 +202,7 @@ module Petit
 
     # Guard method that returns a 403 'HTTPS Required' error when SSL is not employed
     def require_ssl
+      return unless Petit.configuration.require_ssl      
       return_error(error_code: 403, message: 'HTTPS Required') unless request.secure?
     end
 

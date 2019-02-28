@@ -39,6 +39,18 @@ module Petit
         expect(config.api_base_url).to eq('https://api.link.me')
       end
     end
+    describe '#require_ssl' do
+      it "default value is true" do
+        expect(Configuration.new.require_ssl).to be true
+      end
+    end
+    describe '#require_ssl=' do
+      it 'can set value' do
+        config = Configuration.new
+        config.require_ssl = false
+        expect(config.require_ssl).to be false
+      end
+    end
     describe '#service_base_url' do
       it "default value is 'http://change.me'" do
         expect(Configuration.new.service_base_url).to eq('http://change.me')
