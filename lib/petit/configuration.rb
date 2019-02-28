@@ -21,7 +21,8 @@ module Petit
 
   # Configuration class for Petit.
   class Configuration
-    attr_accessor :db_table_name, :not_found_destination, :api_base_url, :service_base_url, :require_ssl
+    attr_accessor :db_table_name, :not_found_destination
+    attr_accessor :api_base_url, :service_base_url, :require_ssl
 
     # Default configuration values
     def initialize

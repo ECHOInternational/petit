@@ -325,13 +325,13 @@ describe 'Petit App' do
             expect(json_response['data'][0]['attributes']).to include 'qr-code'
             expect(json_response['data'][0]['attributes']['qr-code']).to be_kind_of String
           end
-          context "when sparse fieldsets are requested" do
+          context 'when sparse fieldsets are requested' do
             it 'only returns requested attributes' do
               header 'Accept', 'application/json'
               get(
 
                 '/api/v1/shortcodes?fields[shortcodes]=name',
-                { 'destination' => 'www.yahoo.com'},
+                { 'destination' => 'www.yahoo.com' },
                 'HTTPS' => 'on'
               )
               json_response = JSON.parse(last_response.body)
@@ -353,23 +353,23 @@ describe 'Petit App' do
         Petit.configuration.require_ssl = false
       end
     end
-    context "when the shortcode is not present" do
-      it "returns 404" do
-        head '/api/v1/shortcodes/342jklh23', {},'HTTPS' => 'on'
+    context 'when the shortcode is not present' do
+      it 'returns 404' do
+        head '/api/v1/shortcodes/342jklh23', {}, 'HTTPS' => 'on'
         expect(last_response.status).to eq 404
       end
-      it "has no body" do
-        head '/api/v1/shortcodes/342jklh23', {},'HTTPS' => 'on'
+      it 'has no body' do
+        head '/api/v1/shortcodes/342jklh23', {}, 'HTTPS' => 'on'
         expect(last_response.body).to be_empty
       end
     end
-    context "when the shortcode is present" do
-      it "returns 200" do
-        head '/api/v1/shortcodes/abc123', {},'HTTPS' => 'on'
+    context 'when the shortcode is present' do
+      it 'returns 200' do
+        head '/api/v1/shortcodes/abc123', {}, 'HTTPS' => 'on'
         expect(last_response.status).to eq 200
       end
-      it "has no body" do
-        head '/api/v1/shortcodes/abc123', {},'HTTPS' => 'on'
+      it 'has no body' do
+        head '/api/v1/shortcodes/abc123', {}, 'HTTPS' => 'on'
         expect(last_response.body).to be_empty
       end
     end
@@ -433,7 +433,7 @@ describe 'Petit App' do
           shortcode_post = Petit::Shortcode.find('abc123')
           expect(shortcode_post.access_count).to eq(shortcode_pre.access_count)
         end
-        context "when sparse fieldsets are requested" do
+        context 'when sparse fieldsets are requested' do
           it 'only returns requested attributes' do
             get '/api/v1/shortcodes/abc123?fields[shortcodes]=name', {}, 'HTTPS' => 'on'
             json_response = JSON.parse(last_response.body)

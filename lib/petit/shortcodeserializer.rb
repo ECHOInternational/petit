@@ -22,7 +22,7 @@ module Petit
       Petit::QRcode.generate(Petit.configuration.service_base_url + '/' + object.name)
     end
 
-    attribute :generated_link do 
+    attribute :generated_link do
       Petit.configuration.service_base_url + '/' + object.name
     end
 
@@ -40,7 +40,7 @@ module Petit
         access_count: object.access_count,
         created_at: object.created_at,
         updated_at: object.updated_at,
-        generated_link: Petit.configuration.service_base_url + '/' + object.name,
+        generated_link: Petit.configuration.service_base_url + '/' + object.name
       }
     end
   end

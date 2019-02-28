@@ -40,7 +40,7 @@ module Petit
       end
     end
     describe '#require_ssl' do
-      it "default value is true" do
+      it 'default value is true' do
         expect(Configuration.new.require_ssl).to be true
       end
     end

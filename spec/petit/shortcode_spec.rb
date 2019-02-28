@@ -49,7 +49,8 @@ describe Petit::Shortcode do
     end
 
     it 'removes disallowed characters' do
-      expect { shortcode.name = '4*5!6 a/n+?f'}.to change { shortcode.name}.from('abc123').to('456anf')
+      expect { shortcode.name = '4*5!6 a/n+?f' }
+        .to change { shortcode.name }.from('abc123').to('456anf')
     end
 
     it 'can set destination' do

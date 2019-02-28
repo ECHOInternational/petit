@@ -68,7 +68,7 @@ module Petit
     # Returns 200 if found 404 if not
     head '/api/v1/shortcodes/:shortcode' do
       require_ssl
-      
+
       shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
 
       if shortcode.nil?
@@ -202,7 +202,7 @@ module Petit
 
     # Guard method that returns a 403 'HTTPS Required' error when SSL is not employed
     def require_ssl
-      return unless Petit.configuration.require_ssl      
+      return unless Petit.configuration.require_ssl
       return_error(error_code: 403, message: 'HTTPS Required') unless request.secure?
     end
 
@@ -264,7 +264,7 @@ module Petit
     def return_shortcode(shortcode)
       if request.accept?('application/json') || request.accept?('application/vnd.api+json')
         response.headers['Content-Type'] = 'application/vnd.api+json'
-        JSONAPI::Serializer.serialize(shortcode, fields: request.params["fields"]).to_json
+        JSONAPI::Serializer.serialize(shortcode, fields: request.params['fields']).to_json
       else
         shortcode.name + ' (' + shortcode.destination + ') '
       end
@@ -278,7 +278,11 @@ module Petit
     def return_shortcode_collection(shortcodes)
       if request.accept?('application/json') || request.accept?('application/vnd.api+json')
         response.headers['Content-Type'] = 'application/vnd.api+json'
-        JSONAPI::Serializer.serialize(shortcodes, {is_collection: true, fields:request.params["fields"]}).to_json
+        JSONAPI::Serializer.serialize(
+          shortcodes,
+          is_collection: true,
+          fields: request.params['fields']
+        ).to_json
       else
         'No Plaintext Representation Exists'
       end

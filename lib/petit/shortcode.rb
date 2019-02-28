@@ -27,7 +27,7 @@ module Petit
       create_from_params(params.with_indifferent_access)
     end
 
-    # Sets the name of the Petit::Shortcode object 
+    # Sets the name of the Petit::Shortcode object
     # and ensures it is all lowercase and does not contain anything but
     # numbers, letters, and the - (hyphen/dash)
     # @param name [String] the name to assign the object
@@ -42,9 +42,7 @@ module Petit
     #
     # @param destination [String] the destination to assign the object
     # @return [String], the destination of the object
-    def destination=(destination)
-      @destination = destination
-    end
+    attr_writer :destination
 
     # Sets the ssl (https) flag for the Petit::Shortcode object
     #
