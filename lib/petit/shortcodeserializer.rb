@@ -18,6 +18,14 @@ module Petit
       object.name
     end
 
+    attribute :qr_code do
+      Petit::QRcode.generate(Petit.configuration.service_base_url + '/' + object.name)
+    end
+
+    attribute :generated_link do 
+      Petit.configuration.service_base_url + '/' + object.name
+    end
+
     # Set the base URL for the API
     # @return [String] the base URL for the API
     def base_url
@@ -33,7 +41,6 @@ module Petit
         created_at: object.created_at,
         updated_at: object.updated_at,
         generated_link: Petit.configuration.service_base_url + '/' + object.name,
-        qr_code: Petit::QRcode.generate(Petit.configuration.service_base_url + '/' + object.name)
       }
     end
   end

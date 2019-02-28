@@ -263,7 +263,7 @@ module Petit
     def return_shortcode(shortcode)
       if request.accept?('application/json') || request.accept?('application/vnd.api+json')
         response.headers['Content-Type'] = 'application/vnd.api+json'
-        JSONAPI::Serializer.serialize(shortcode).to_json
+        JSONAPI::Serializer.serialize(shortcode, fields: request.params["fields"]).to_json
       else
         shortcode.name + ' (' + shortcode.destination + ') '
       end
