@@ -38,12 +38,6 @@ module Petit
       @name = @name.gsub(/[^a-z0-9-]/, '') if @name
     end
 
-    # Sets the destination of the Petit::Shortcode object
-    #
-    # @param destination [String] the destination to assign the object
-    # @return [String], the destination of the object
-    attr_writer :destination
-
     # Sets the ssl (https) flag for the Petit::Shortcode object
     #
     # @param ssl [String, Integer, Boolean] the value to set the ssl flag

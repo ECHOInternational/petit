@@ -4,8 +4,9 @@ require_relative 'jsonapiparser'
 
 module Petit
   # Sinatra application class to serve HTTP API requests
-  #   All requests can be made as 'text/html' with parameters as form values, or as JSONAPI objects
-  #   To communicate with the API using JSON, set ACCEPTS header to 'application/vnd.api+json'
+  # All requests can be made as 'text/html' with parameters as form values, or as JSONAPI objects
+  # To communicate with the API using JSON, set ACCEPTS header to 'application/vnd.api+json'
+  #
   # rubocop:disable Metrics/ClassLength
   class App < Sinatra::Application
     use Rack::Parser, parsers: {

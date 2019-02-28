@@ -2,8 +2,8 @@ require 'jsonapi-serializers'
 
 module Petit
   # Serializes Petit::Shortcode objects into JSONAPI compliant JSON
-  #   this is essentially a configuration file for specifying how the
-  #   JSON representation should be built from a Shortcode object.
+  # this is essentially a configuration file for specifying how the
+  # JSON representation should be built from a Shortcode object.
   class ShortcodeSerializer
     include JSONAPI::Serializer
 

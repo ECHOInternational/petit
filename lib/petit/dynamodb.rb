@@ -2,9 +2,10 @@ module Petit
   # Namespace for Database connector classes
   module DB
     # Database abstraction class for shortcode CRUD operations.
-    #   It is possible to rewrite this class to for a different database.
-    #   To replace this class with your own database connector you'll need
-    #   to replace the DATABASE constant in the shortcode class with your own.
+    # It is possible to rewrite this class to for a different database.
+    # To replace this class with your own database connector you'll need
+    # to replace the DATABASE constant in the shortcode class with your own.
+    #
     # @todo Investigate if there is a better way to do this.
     # rubocop:disable Metrics/ClassLength
     class DynamoDB
@@ -84,7 +85,7 @@ module Petit
       end
 
       # Updates an existing object in the database.
-      # To create new objects use {#save}.
+      # To create new objects use {#self.save}.
       #
       # @param shortcode [Shortcode]
       # @return [Hash] resulting collection of object attributes after update
