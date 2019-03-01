@@ -12,32 +12,6 @@ module Petit
     use Rack::Parser, parsers: {
       'application/vnd.api+json' => JSONapiParser.new
     }
-    # use Rack::Parser, parsers: {
-    #   'application/vnd.api+json' => proc { |data|
-    #     JSON.parse(data).dig('data', 'attributes')
-    #   }
-    # }
-
-    # @method get_root
-    # @overload get '/'
-    # Gets the root url with no shortcode, always returns (404) Not Found
-    get '/' do
-      redirect_to_not_found
-    end
-
-    # @method get_shortcode
-    # @overload get '/:shortcode'
-    # @param shortcode [String] the shortcode to which to redirect
-    # Finds the provided shortcode and redirects to it's destination.
-    # If the provided shortcode is not found it redirects to (404) Not Found
-    get '/:shortcode' do
-      response = Petit::Shortcode.find_by_name(params[:shortcode])
-      if response.nil?
-        redirect_to_not_found
-      else
-        redirect_to(response)
-      end
-    end
 
     # @method api_get_shortcode_by_destination
     # @overload get '/api/v1/shortcodes'
@@ -45,7 +19,6 @@ module Petit
     # Finds and returns zero or more shortcode objects based on their destination.
     # Parameters can either be submitted as form values or in the body as JSONAPI objects
     get '/api/v1/shortcodes' do
-      require_ssl
       if params[:destination]
         shortcodes = Petit::Shortcode.find_by_destination(params[:destination])
         return_shortcode_collection(shortcodes)
@@ -59,7 +32,6 @@ module Petit
     # Returns a random shortcode name that is not currently in use in the system.
     # @todo add parameter to specify length.
     get '/api/v1/suggestion' do
-      require_ssl
       return_suggestion
     end
 
@@ -68,10 +40,7 @@ module Petit
     # @param shortcode [String] the shortcode to find in the database
     # Returns 200 if found 404 if not
     head '/api/v1/shortcodes/:shortcode' do
-      require_ssl
-
       shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
-
       if shortcode.nil?
         404
       else
@@ -85,10 +54,7 @@ module Petit
     # Finds and returns a single shortcode object by its name.
     # If no shortcode is found by that name a 404 (Not Found) response is issued
     get '/api/v1/shortcodes/:shortcode' do
-      require_ssl
-
       shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
-
       if shortcode.nil?
         return_not_found
       else
@@ -105,7 +71,6 @@ module Petit
     # Returns 201 with Location header for the newly created resource on sucess
     # Returns 4XX with error message on failure
     post '/api/v1/shortcodes' do
-      require_ssl
       new_shortcode = Petit::Shortcode.new(
         'name' => params[:name],
         'destination' => params[:destination],
@@ -134,8 +99,6 @@ module Petit
     # This method always returns an error as shortcodes cannot be overwritten.
     # To update a shortcode use "put '/api/v1/shortcodes/:shortcode'". See {#api_update_shortcode}
     post '/api/v1/shortcodes/:shortcode' do
-      require_ssl
-
       response = Petit::Shortcode.find_by_name(params[:shortcode])
       if response.nil?
         return_error(
@@ -162,10 +125,6 @@ module Petit
     # If shortcode specified does not exist a 404 error is returned
     # If parameter values do not pass validation a 400 error is returned
     put '/api/v1/shortcodes/:shortcode' do
-      require_ssl
-      # if request.content_type == "application/vnd.api+json"
-      #   binding.pry
-      # end
       shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
       if shortcode.nil?
         return_error(error_code: 404, message: 'Record does not exist.')
@@ -186,7 +145,6 @@ module Petit
     # @param shortcode [String] the shortcode to delete
     # Deletes a shortcode
     delete '/api/v1/shortcodes/:shortcode' do
-      require_ssl
       shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
       if shortcode.nil?
         return_error(error_code: 404, message: 'Record does not exist.')
@@ -200,38 +158,7 @@ module Petit
         end
       end
     end
-
-    # Guard method that returns a 403 'HTTPS Required' error when SSL is not employed
-    def require_ssl
-      return unless Petit.configuration.require_ssl
-      return_error(error_code: 403, message: 'HTTPS Required') unless request.secure?
-    end
-
-    # 301 Redirects requests to the shortcode destination.
-    # Note: this method increments the shortcode's hit counter
-    # @param shortcode [Shortcode] the shortcode object from which to build the redirect URL
-    def redirect_to(shortcode)
-      url = ''
-      url += if shortcode.ssl?
-               'https://'
-             else
-               'http://'
-             end
-      url += shortcode.destination
-      shortcode.hit
-      redirect url, 301
-    end
-
-    # 303 Redirects to a not_found_destination from the configuration, or
-    # returns 404 'Not Found' if not not_found_destination is specified
-    def redirect_to_not_found
-      if Petit.configuration.not_found_destination
-        redirect Petit.configuration.not_found_destination, 303
-      else
-        return_not_found
-      end
-    end
-
+    
     # Always returns 404 'Not Found'
     def return_not_found
       return_error(error_code: 404, message: 'Not Found')

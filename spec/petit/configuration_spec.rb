@@ -15,18 +15,6 @@ module Petit
         expect(config.db_table_name).to eq('smartcodes')
       end
     end
-    describe '#not_found_destination' do
-      it 'default value is nil' do
-        expect(Configuration.new.not_found_destination).to be_nil
-      end
-    end
-    describe '#not_found_destination=' do
-      it 'can set value' do
-        config = Configuration.new
-        config.not_found_destination = 'http://www.404.org/'
-        expect(config.not_found_destination).to eq('http://www.404.org/')
-      end
-    end
     describe '#api_base_url' do
       it "default value is 'http://localhost'" do
         expect(Configuration.new.api_base_url).to eq('http://localhost')
@@ -37,18 +25,6 @@ module Petit
         config = Configuration.new
         config.api_base_url = 'https://api.link.me'
         expect(config.api_base_url).to eq('https://api.link.me')
-      end
-    end
-    describe '#require_ssl' do
-      it 'default value is true' do
-        expect(Configuration.new.require_ssl).to be true
-      end
-    end
-    describe '#require_ssl=' do
-      it 'can set value' do
-        config = Configuration.new
-        config.require_ssl = false
-        expect(config.require_ssl).to be false
       end
     end
     describe '#service_base_url' do

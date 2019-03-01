@@ -1,17 +1,3 @@
-PATH
-  remote: .
-  specs:
-    petit (0.4.0)
-      activesupport (~> 4.2.3)
-      aws-sdk (~> 2)
-      json (~> 2)
-      jsonapi-serializers
-      rack-parser
-      rake
-      rqrcode
-      sinatra
-      unicorn
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -20,77 +6,81 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    aws-sdk (2.11.230)
-      aws-sdk-resources (= 2.11.230)
-    aws-sdk-core (2.11.230)
+    aws-record (1.1.1)
+      aws-sdk-resources (~> 2.0)
+    aws-sdk (2.11.231)
+      aws-sdk-resources (= 2.11.231)
+    aws-sdk-core (2.11.231)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-resources (2.11.230)
-      aws-sdk-core (= 2.11.230)
+    aws-sdk-resources (2.11.231)
+      aws-sdk-core (= 2.11.231)
     aws-sigv4 (1.0.3)
     chunky_png (1.3.11)
-    coderay (1.1.1)
     concurrent-ruby (1.1.4)
-    diff-lcs (1.2.5)
+    diff-lcs (1.3)
     i18n (0.9.5)
       concurrent-ruby (~> 1.0)
     jmespath (1.4.0)
     json (2.2.0)
     jsonapi-serializers (1.0.1)
       activesupport
-    kgio (2.11.2)
-    method_source (0.8.2)
     minitest (5.11.3)
-    pry (0.10.3)
-      coderay (~> 1.1.0)
-      method_source (~> 0.8.1)
-      slop (~> 3.4)
-    rack (1.6.4)
+    mustermann (1.0.3)
+    rack (2.0.6)
+    rack-contrib (2.1.0)
+      rack (~> 2.0)
     rack-parser (0.7.0)
       rack
-    rack-protection (1.5.5)
+    rack-protection (2.0.5)
       rack
-    rack-test (0.6.3)
-      rack (>= 1.0)
-    raindrops (0.19.0)
+    rack-test (1.1.0)
+      rack (>= 1.0, < 3)
     rake (12.3.2)
     rqrcode (0.10.1)
       chunky_png (~> 1.0)
-    rspec (3.4.0)
-      rspec-core (~> 3.4.0)
-      rspec-expectations (~> 3.4.0)
-      rspec-mocks (~> 3.4.0)
-    rspec-core (3.4.3)
-      rspec-support (~> 3.4.0)
-    rspec-expectations (3.4.0)
+    rspec (3.8.0)
+      rspec-core (~> 3.8.0)
+      rspec-expectations (~> 3.8.0)
+      rspec-mocks (~> 3.8.0)
+    rspec-core (3.8.0)
+      rspec-support (~> 3.8.0)
+    rspec-expectations (3.8.2)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.4.0)
-    rspec-mocks (3.4.1)
+      rspec-support (~> 3.8.0)
+    rspec-mocks (3.8.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.4.0)
-    rspec-support (3.4.1)
-    sinatra (1.4.8)
-      rack (~> 1.5)
-      rack-protection (~> 1.4)
-      tilt (>= 1.3, < 3)
-    slop (3.6.0)
+      rspec-support (~> 3.8.0)
+    rspec-support (3.8.0)
+    rubysl-base64 (2.0.0)
+    sinatra (2.0.5)
+      mustermann (~> 1.0)
+      rack (~> 2.0)
+      rack-protection (= 2.0.5)
+      tilt (~> 2.0)
     thread_safe (0.3.6)
     tilt (2.0.9)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
-    unicorn (5.4.1)
-      kgio (~> 2.6)
-      raindrops (~> 0.7)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.6)
-  petit!
-  pry
+  activesupport (~> 4.2.3)
+  aws-record
+  aws-sdk (~> 2)
+  json (~> 2)
+  jsonapi-serializers
+  rack
+  rack-contrib
+  rack-parser
   rack-test
+  rake
+  rqrcode
   rspec
+  rubysl-base64
+  sinatra
 
 BUNDLED WITH
-   1.12.5
+   1.16.6

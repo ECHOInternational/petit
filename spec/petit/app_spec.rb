@@ -2,7 +2,6 @@ require 'petit'
 require 'spec_helper'
 require 'rack/test'
 require 'rack/parser'
-require 'pry'
 
 describe 'Petit App' do
   include Rack::Test::Methods
@@ -18,114 +17,10 @@ describe 'Petit App' do
       config.db_table_name = ENV['DB_TABLE_NAME']
       config.api_base_url = ENV['API_BASE_URL']
       config.service_base_url = ENV['SERVICE_BASE_URL']
-      config.require_ssl = false
-    end
-  end
-
-  describe "get '/'" do
-    context 'when no not_found_destination is defined' do
-      it 'a not_found_destination is nil' do
-        expect(Petit.configuration.not_found_destination).to be_nil
-      end
-      it 'throws 404 from root' do
-        get '/'
-        expect(last_response).to be_not_found
-      end
-    end
-
-    context 'when a not_found_destination is defined' do
-      it 'has a not_found_destination configured' do
-        Petit.configuration.not_found_destination = 'http://www.google.com/'
-        expect(Petit.configuration.not_found_destination).to_not be_nil
-      end
-      it 'redirects to defined 404 page from root' do
-        Petit.configuration.not_found_destination = 'http://www.google.com/'
-        get '/'
-        expect(last_response).to be_redirect
-        follow_redirect!
-        expect(last_request.url).to eql 'http://www.google.com/'
-      end
-    end
-  end
-
-  describe "get ':/shortcode'" do
-    context 'when the shortcode is found' do
-      before(:context) do
-        shortcode = Petit::Shortcode.new(
-          name: 'abc123',
-          destination: 'www.yahoo.com',
-          ssl: false
-        )
-
-        # Two step overwrite
-        shortcode.destroy
-        shortcode.save
-      end
-      it 'redirects to the correct destination' do
-        get '/abc123'
-        expect(last_response).to be_redirect
-        follow_redirect!
-        expect(last_request.url).to eq('http://www.yahoo.com/')
-      end
-
-      it 'increments the access_count' do
-        shortcode_pre = Petit::Shortcode.find('abc123')
-        get '/abc123'
-        shortcode_post = Petit::Shortcode.find('abc123')
-        expect(shortcode_post.access_count).to eq(shortcode_pre.access_count + 1)
-      end
-    end
-
-    context 'when the shortcode is not found' do
-      context 'when no not_found_destination is defined' do
-        it 'a not_found_destination is nil' do
-          expect(Petit.configuration.not_found_destination).to be_nil
-        end
-        it 'throws 404 from root' do
-          get '/ajdslfjasoidhajldsnfasd'
-          expect(last_response).to be_not_found
-        end
-      end
-
-      context 'when a not_found_destination is defined' do
-        it 'has a not_found_destination configured' do
-          Petit.configuration.not_found_destination = 'http://www.google.com/'
-          expect(Petit.configuration.not_found_destination).to_not be_nil
-        end
-        it 'redirects to defined 404 page from root' do
-          Petit.configuration.not_found_destination = 'http://www.google.com/'
-          get '/ajdslfjasoidhajldsnfasd'
-          expect(last_response).to be_redirect
-          follow_redirect!
-          expect(last_request.url).to eql 'http://www.google.com/'
-        end
-      end
     end
   end
 
   describe "get '/api/v1/suggestion" do
-    context 'when ssl is required, but not employed' do
-      it "returns error type 403 'HTTPS Required" do
-        Petit.configuration.require_ssl = true
-        get '/api/v1/suggestion'
-        expect(last_response.status).to eq 403
-        Petit.configuration.require_ssl = false
-      end
-    end
-    context 'when ssl is employed' do
-      it 'returns code 200 OK' do
-        Petit.configuration.require_ssl = true
-        get '/api/v1/suggestion', {}, 'HTTPS' => 'on'
-        expect(last_response.status).to eq 200
-        Petit.configuration.require_ssl = false
-      end
-    end
-    context 'when ssl is not employed' do
-      it 'returns code 200 OK' do
-        get '/api/v1/suggestion'
-        expect(last_response.status).to eq 200
-      end
-    end
     context 'when json is requested' do
       it "returns Content-Type of 'application/vnd.api+json'" do
         header 'Accept', 'application/json'
@@ -193,28 +88,6 @@ describe 'Petit App' do
   end
 
   describe "get '/api/v1/shortcodes'" do
-    context 'when ssl is required, but not employed' do
-      it "returns error type 403 'HTTPS Required'" do
-        Petit.configuration.require_ssl = true
-        get '/api/v1/shortcodes'
-        expect(last_response.status).to eq 403
-        Petit.configuration.require_ssl = false
-      end
-    end
-    context 'when ssl is not required, not employed' do
-      it "does not return error type 403 'HTTPS Required'" do
-        get '/api/v1/shortcodes'
-        expect(last_response.status).to_not eq 403
-      end
-    end
-    context 'when ssl is required and employed' do
-      it "does not return error type 403 'HTTPS Required'" do
-        Petit.configuration.require_ssl = true
-        get '/api/v1/shortcodes', {}, 'HTTPS' => 'on'
-        expect(last_response.status).to_not eq 403
-        Petit.configuration.require_ssl = false
-      end
-    end
     context 'when json is requested' do
       it "returns Content-Type of 'application/vnd.api+json'" do
         header 'Accept', 'application/json'
@@ -345,14 +218,6 @@ describe 'Petit App' do
   end
 
   describe "head '/api/v1/shortcodes/:shortcode" do
-    context 'when ssl is required, but not employed' do
-      it "returns error type 403 'HTTPS Required'" do
-        Petit.configuration.require_ssl = true
-        head '/api/v1/shortcodes/abc123'
-        expect(last_response.status).to eq 403
-        Petit.configuration.require_ssl = false
-      end
-    end
     context 'when the shortcode is not present' do
       it 'returns 404' do
         head '/api/v1/shortcodes/342jklh23', {}, 'HTTPS' => 'on'
@@ -376,14 +241,6 @@ describe 'Petit App' do
   end
 
   describe "get '/api/v1/shortcodes/:shortcode'" do
-    context 'when ssl is required, but not employed' do
-      it "returns error type 403 'HTTPS Required'" do
-        Petit.configuration.require_ssl = true
-        get '/api/v1/shortcodes/abc123'
-        expect(last_response.status).to eq 403
-        Petit.configuration.require_ssl = false
-      end
-    end
     context 'when json is requested' do
       context 'when the shortcode is present' do
         it "returns Content-Type of 'application/vnd.api+json'" do
@@ -466,22 +323,6 @@ describe 'Petit App' do
   end
 
   describe "post '/api/v1/shortcodes'" do
-    context 'when ssl is required, but not employed' do
-      it "returns error type 403 'HTTPS Required'" do
-        Petit.configuration.require_ssl = true
-        post(
-          '/api/v1/shortcodes',
-          {
-            'name' => 'testcode',
-            'destination' => 'www.testcode.io',
-            'ssl' => true
-          },
-          'HTTPS' => 'off'
-        )
-        expect(last_response.status).to eq 403
-        Petit.configuration.require_ssl = false
-      end
-    end
     context 'when arguments are supplied as json' do
       before(:context) do
         shortcode = Petit::Shortcode.find('testcodejson')
@@ -567,14 +408,19 @@ describe 'Petit App' do
     end
     context 'when shortcode already exists' do
       it 'throws a 409 (conflict) error' do
-        get '/testshortcodeunsuccessful'
-        expect(last_response).to be_redirect
-        follow_redirect!
-        expect(last_request.url).to eq('https://www.test.me/')
         post(
           '/api/v1/shortcodes',
           {
-            'name' => 'testshortcodeunsuccessful',
+            'name' => 'duptestcode',
+            'destination' => 'www.test.me',
+            'ssl' => true
+          },
+          'HTTPS' => 'on'
+        )
+        post(
+          '/api/v1/shortcodes',
+          {
+            'name' => 'duptestcode',
             'destination' => 'www.test.me',
             'ssl' => true
           },
@@ -585,70 +431,7 @@ describe 'Petit App' do
     end
   end
 
-  describe "put '/'" do
-    context 'when no not_found_destination is defined' do
-      it 'a not_found_destination is nil' do
-        expect(Petit.configuration.not_found_destination).to be_nil
-      end
-      it 'throws 404 from root' do
-        put '/'
-        expect(last_response).to be_not_found
-      end
-    end
-
-    context 'when a not_found_destination is defined' do
-      it 'has a not_found_destination configured' do
-        Petit.configuration.not_found_destination = 'http://www.google.com/'
-        expect(Petit.configuration.not_found_destination).to_not be_nil
-      end
-      it 'throws 404 from root' do
-        Petit.configuration.not_found_destination = 'http://www.google.com/'
-        put '/'
-        expect(last_response).to be_not_found
-      end
-    end
-  end
-
-  describe "delete '/'" do
-    context 'when no not_found_destination is defined' do
-      it 'a not_found_destination is nil' do
-        expect(Petit.configuration.not_found_destination).to be_nil
-      end
-      it 'throws 404 from root' do
-        delete '/'
-        expect(last_response).to be_not_found
-      end
-    end
-
-    context 'when a not_found_destination is defined' do
-      it 'has a not_found_destination configured' do
-        Petit.configuration.not_found_destination = 'http://www.google.com/'
-        expect(Petit.configuration.not_found_destination).to_not be_nil
-      end
-      it 'throws 404 from root' do
-        Petit.configuration.not_found_destination = 'http://www.google.com/'
-        delete '/'
-        expect(last_response).to be_not_found
-      end
-    end
-  end
-
   describe "put '/api/v1/shortcodes/:shortcode'" do
-    context 'when ssl is required, but not employed' do
-      it "returns error type 403 'HTTPS Required'" do
-        Petit.configuration.require_ssl = true
-        put(
-          '/api/v1/shortcodes/notthere23480238',
-          {
-            'name' => 'nocreate',
-            'destination' => 'www.shouldntwork.com'
-          },
-          'HTTPS' => 'off'
-        )
-        expect(last_response.status).to eq 403
-        Petit.configuration.require_ssl = false
-      end
-    end
     context 'if the shortcode is not found' do
       it 'throws a 404 (not found) error' do
         put(
@@ -773,14 +556,6 @@ describe 'Petit App' do
   end
 
   describe "delete '/api/v1/shortcodes/:shortcode'" do
-    context 'when ssl is required, but not employed' do
-      it "returns error type 403 'HTTPS Required'" do
-        Petit.configuration.require_ssl = true
-        delete '/api/v1/shortcodes/notthere23480238'
-        expect(last_response.status).to eq 403
-        Petit.configuration.require_ssl = false
-      end
-    end
     context 'if the shortcode is not found' do
       it 'throws a 404 (not found) error' do
         delete '/api/v1/shortcodes/notthere23480238', {}, 'HTTPS' => 'on'
@@ -793,13 +568,11 @@ describe 'Petit App' do
         shortcode.destroy
         shortcode.save
 
-        get '/abc124'
-        expect(last_response).to be_redirect
+        expect(Petit::Shortcode.find_by_name('abc124')).to be_a Petit::Shortcode
 
         delete '/api/v1/shortcodes/abc124', {}, 'HTTPS' => 'on'
 
-        get '/abc124'
-        expect(last_response).to be_not_found
+        expect(Petit::Shortcode.find_by_name('abc124')).to be_nil
       end
       it 'returns 200' do
         shortcode = Petit::Shortcode.new(name: 'abc124', destination: 'www.yahoo.com', ssl: true)

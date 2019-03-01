@@ -21,16 +21,13 @@ module Petit
 
   # Configuration class for Petit.
   class Configuration
-    attr_accessor :db_table_name, :not_found_destination
-    attr_accessor :api_base_url, :service_base_url, :require_ssl
+    attr_accessor :db_table_name, :api_base_url, :service_base_url
 
     # Default configuration values
     def initialize
       @db_table_name = 'shortcodes'
-      @not_found_destination = nil
       @api_base_url = 'http://localhost'
       @service_base_url = 'http://change.me'
-      @require_ssl = true
     end
   end
 end
