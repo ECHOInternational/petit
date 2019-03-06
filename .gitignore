@@ -4,6 +4,7 @@
 .config
 .yardoc
 .env
+.aws-sam
 InstalledFiles
 _yardoc
 coverage
