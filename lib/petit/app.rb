@@ -18,11 +18,11 @@ module Petit
     end
 
     # @method api_get_shortcode_by_destination
-    # @overload get '/api/v1/shortcodes'
+    # @overload get '/shortcodes'
     # @param destination [String] the destination url to find in the database
     # Finds and returns zero or more shortcode objects based on their destination.
     # Parameters can either be submitted as form values or in the body as JSONAPI objects
-    get '/api/v1/shortcodes' do
+    get '/shortcodes' do
       if params[:destination]
         shortcodes = Petit::Shortcode.find_by_destination(params[:destination])
         return_shortcode_collection(shortcodes)
@@ -32,10 +32,10 @@ module Petit
     end
 
     # @method api_get_suggestion
-    # @overload get '/api/v1/suggestion'
+    # @overload get '/suggestion'
     # Returns a random shortcode name that is not currently in use in the system.
     # @todo add parameter to specify length.
-    get '/api/v1/suggestion' do
+    get '/suggestion' do
       return_suggestion
     end
 
@@ -43,7 +43,7 @@ module Petit
     # @overload head 'api/v1/shortcodes/:shortcode'
     # @param shortcode [String] the shortcode to find in the database
     # Returns 200 if found 404 if not
-    head '/api/v1/shortcodes/:shortcode' do
+    head '/shortcodes/:shortcode' do
       shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
       if shortcode.nil?
         404
@@ -53,11 +53,11 @@ module Petit
     end
 
     # @method api_get_shortcode
-    # @overload get '/api/v1/shortcodes/:shortcode'
+    # @overload get '/shortcodes/:shortcode'
     # @param shortcode [String] the shortcode to find in the database
     # Finds and returns a single shortcode object by its name.
     # If no shortcode is found by that name a 404 (Not Found) response is issued
-    get '/api/v1/shortcodes/:shortcode' do
+    get '/shortcodes/:shortcode' do
       shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
       if shortcode.nil?
         return_not_found
@@ -67,14 +67,14 @@ module Petit
     end
 
     # @method api_create_shortcode
-    # @overload post '/api/v1/shortcodes'
+    # @overload post '/shortcodes'
     # @param name [String] the name of the shortcode
     # @param destination [String] the destination URL for the shortcode (do not include protocol)
     # @param ssl [String] the protocol to use for the shortcode (true for https, false for http)
     # Creates a new shortcode.
     # Returns 201 with Location header for the newly created resource on sucess
     # Returns 4XX with error message on failure
-    post '/api/v1/shortcodes' do
+    post '/shortcodes' do
       new_shortcode = Petit::Shortcode.new(
         'name' => params[:name],
         'destination' => params[:destination],
@@ -90,7 +90,7 @@ module Petit
         headers(
           'Location' =>
             Petit.configuration.api_base_url +
-            '/api/v1/shortcodes/' +
+            '/shortcodes/' +
             new_shortcode.name
         )
         shortcode = Petit::Shortcode.find_by_name(new_shortcode.name)
@@ -99,10 +99,10 @@ module Petit
     end
 
     # @method api_create_existing_shortcode
-    # @overload post '/api/v1/shortcodes/:shortcode'
+    # @overload post '/shortcodes/:shortcode'
     # This method always returns an error as shortcodes cannot be overwritten.
-    # To update a shortcode use "put '/api/v1/shortcodes/:shortcode'". See {#api_update_shortcode}
-    post '/api/v1/shortcodes/:shortcode' do
+    # To update a shortcode use "put '/shortcodes/:shortcode'". See {#api_update_shortcode}
+    post '/shortcodes/:shortcode' do
       response = Petit::Shortcode.find_by_name(params[:shortcode])
       if response.nil?
         return_error(
@@ -118,7 +118,7 @@ module Petit
     end
 
     # @method api_update_shortcode
-    # @overload put '/api/v1/shortcodes/:shortcode'
+    # @overload put '/shortcodes/:shortcode'
     # @param shortcode [String] the shortcode to update (should be provided in URL)
     # @param destination [String] (Optional) the destination URL for the shortcode
     #  (do not include protocol)
@@ -128,7 +128,7 @@ module Petit
     # On success a 200 response is returned along with the updated Shortcode object parameters
     # If shortcode specified does not exist a 404 error is returned
     # If parameter values do not pass validation a 400 error is returned
-    put '/api/v1/shortcodes/:shortcode' do
+    put '/shortcodes/:shortcode' do
       shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
       if shortcode.nil?
         return_error(error_code: 404, message: 'Record does not exist.')
@@ -145,10 +145,10 @@ module Petit
     end
 
     # @method api_delete_shortcode
-    # @overload delete '/api/v1/shortcodes/:shortcode'
+    # @overload delete '/shortcodes/:shortcode'
     # @param shortcode [String] the shortcode to delete
     # Deletes a shortcode
-    delete '/api/v1/shortcodes/:shortcode' do
+    delete '/shortcodes/:shortcode' do
       shortcode = Petit::Shortcode.find_by_name(params[:shortcode])
       if shortcode.nil?
         return_error(error_code: 404, message: 'Record does not exist.')
