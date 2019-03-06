@@ -13,6 +13,10 @@ module Petit
       'application/vnd.api+json' => JSONapiParser.new
     }
 
+    not_found do
+      return_error(error_code: 404, message: 'Not Found')
+    end
+
     # @method api_get_shortcode_by_destination
     # @overload get '/api/v1/shortcodes'
     # @param destination [String] the destination url to find in the database

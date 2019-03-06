@@ -1,0 +1,13 @@
+current directory: /Users/npflood/Source/petit/vendor/bundle/ruby/2.5.0/gems/json-2.2.0/ext/json
+/Users/npflood/.rvm/rubies/ruby-2.5.1/bin/ruby -r ./siteconf20190301-83096-19zb1l5.rb extconf.rb
+creating Makefile
+
+current directory: /Users/npflood/Source/petit/vendor/bundle/ruby/2.5.0/gems/json-2.2.0/ext/json
+make "DESTDIR=" clean
+
+current directory: /Users/npflood/Source/petit/vendor/bundle/ruby/2.5.0/gems/json-2.2.0/ext/json
+make "DESTDIR="
+make: Nothing to be done for `all'.
+
+current directory: /Users/npflood/Source/petit/vendor/bundle/ruby/2.5.0/gems/json-2.2.0/ext/json
+make "DESTDIR=" install

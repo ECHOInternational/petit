@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  petit-lambda
+
+  Petit URL Shortener backend for Lambda and API-Gateway 
+
+Resources:
+  PetitLambdaFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: PetitApp
+      CodeUri: "./"
+      Handler: lambda.handler
+      Runtime: ruby2.5
+      Environment: 
+        Variables:
+          DB_TABLE_NAME: 'petit_travis_ci_test'
+          API_BASE_URL: !Sub "https://${PetitAPI}.execute-api.${AWS::Region}.amazonaws.com/api/v1"
+          SERVICE_BASE_URL: 'http://fake.ly'
+      MemorySize: 512
+      Timeout: 30
+      Events:
+        PetitApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /
+            Method: ANY
+            RestApiId: !Ref PetitApi
+  PetitApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: PetitApi
+      StageName: v1
+      DefinitionBody:
+        swagger: '2.0'
+        basePath: '/v1'
+        info:
+          title: !Ref AWS::StackName
+        paths:
+          /{proxy+}:
+            x-amazon-apigateway-any-method:
+              responses: {}
+              x-amazon-apigateway-integration:
+                uri:
+                  !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitLambdaFunction.Arn}/invocations'
+                passthroughBehavior: "when_no_match"
+                httpMethod: POST
+                type: "aws_proxy"
+          /:
+            get:
+              responses: {}
+              x-amazon-apigateway-integration:
+                uri:
+                  !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitLambdaFunction.Arn}/invocations'
+                passthroughBehavior: "when_no_match"
+                httpMethod: POST
+                type: "aws_proxy"
+  ConfigLambdaPermission:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+    - PetitLambdaFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PetitLambdaFunction
+      Principal: apigateway.amazonaws.com
+Outputs:
+  PetitAppUrl:
+    Description: App endpoint URL
+    Value: !Sub "https://${PetitAPI}.execute-api.${AWS::Region}.amazonaws.com/api/v1"
