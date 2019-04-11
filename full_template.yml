@@ -53,7 +53,7 @@ Resources:
   PetitRedirector:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: PetitRedirector
+      FunctionName: PetitRedirectorFunction
       Description: >-
         URL shortener function that simply redirects traffic to destinations
         stored in dynamodb.
