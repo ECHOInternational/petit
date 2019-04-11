@@ -1,23 +1,25 @@
-Petit:Lambda Ruby Url Shortening Backend Service Based on AWS Lambda and API Gateway
+Petit:Lambda - Url Shortening Service Based on AWS Lambda and API Gateway
 ===========================================
 
-## Environment Variables
-Petit is designed to be a Twelve Factor app and therefore all configuration
-should be done using environment variables.
+Put full description here. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur ex quis, architecto placeat officiis sit ea esse laborum enim quibusdam cum modi saepe in alias deserunt explicabo eos dolore iste.
 
-### Amazon Web Services:
+## Stack
+### Lambda Functions
 
-To use the default DynamoDB you'll need all of the AWS credentials.
+- **PetitRedirector** is a simple javascript function that recieves http requests from a load balancer and returns redirects based on entries in a DynamoDB table shared by both functions.
 
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- AWS_REGION
+- **PetitAPIFunction** is a Ruby application backed by Sinatra which provides the CRUD operations for the url shortener through Amazon API Gateway.
 
-### These variables set the configuration for the Petit app.
+### Tables
+
+### Event Sources
+
+
+
+#### These variables set the configuration for the Petit API app.
 - DB_TABLE_NAME (Name of the database to create/use)
 - API_BASE_URL (Ususally a HTTPS address with some security applied)
 - SERVICE_BASE_URL (Public base URL like 'http://bit.ly' )
-- NOT_FOUND_DESTINATION (Optional Address where public requests that result in 404 will be sent.)
 
 ## About The Author(s)
 

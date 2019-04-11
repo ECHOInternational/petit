@@ -9,7 +9,7 @@ Resources:
   PetitLambdaFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      FunctionName: PetitApp
+      FunctionName: PetitLambdaFunction
       CodeUri: "./"
       Handler: lambda.handler
       Runtime: ruby2.5
@@ -18,7 +18,7 @@ Resources:
           DB_TABLE_NAME: 'petit_travis_ci_test'
           API_BASE_URL: !Sub "https://${PetitAPI}.execute-api.${AWS::Region}.amazonaws.com/api/v1"
           SERVICE_BASE_URL: 'http://fake.ly'
-      MemorySize: 512
+      MemorySize: 64
       Timeout: 30
       Events:
         PetitApi:
@@ -33,29 +33,491 @@ Resources:
       Name: PetitApi
       StageName: v1
       DefinitionBody:
-        swagger: '2.0'
-        basePath: '/v1'
+        openapi: "3.0.1"
         info:
-          title: !Ref AWS::StackName
+          title: "ECHOcommunity URL Shortener"
+          version: "2016-12-07T16:41:37Z"
+        servers:
+        - url: "http://development.echocommunity.org:3000/"
+          variables:
+            basePath:
+              default: "/"
         paths:
-          /{proxy+}:
-            x-amazon-apigateway-any-method:
-              responses: {}
-              x-amazon-apigateway-integration:
-                uri:
-                  !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitLambdaFunction.Arn}/invocations'
-                passthroughBehavior: "when_no_match"
-                httpMethod: POST
-                type: "aws_proxy"
-          /:
+          /shortcodes:
             get:
-              responses: {}
-              x-amazon-apigateway-integration:
-                uri:
-                  !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitLambdaFunction.Arn}/invocations'
-                passthroughBehavior: "when_no_match"
-                httpMethod: POST
-                type: "aws_proxy"
+              summary: Get a list of shortcodes for a given destination
+              parameters:
+              - name: "destination"
+                in: "query"
+                schema:
+                  type: "string"
+                required: true
+                description: URL (without protocol://) for which to return a list of shortcodes
+                example: "www.site.com/path/page_long_url.html"
+              - name: "Accept"
+                in: "header"
+                schema:
+                  type: "string"
+              responses:
+                400:
+                  description: "Bad Request"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Errors"
+                200:
+                  description: "Success"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/ShortcodeCollection"
+            post:
+              summary: Create a new shortcode with the given parameters
+              parameters:
+              - name: "Content-Type"
+                in: "header"
+                schema:
+                  type: "string"
+              - name: "Accept"
+                in: "header"
+                schema:
+                  type: "string"
+              - name: "destination"
+                required: true
+                in: "query"
+                schema:
+                  type: "string"
+              - name: "name"
+                required: true
+                in: "query"
+                schema:
+                  type: "string"
+              - name: "ssl"
+                in: "query"
+                schema:
+                  type: "boolean"
+                  default: false
+              responses:
+                400:
+                  description: "Unprocessable Entity"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Errors"
+                409:
+                  description: "Submitted data conflicts with existing records"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Errors"
+                201:
+                  description: "Success"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Shortcode"
+              security:
+              - api_key: []
+            options:
+              responses:
+                200:
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Methods:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Headers:
+                      schema:
+                        type: "string"
+                  content:
+                    application/json:
+                      schema:
+                        $ref: "#/components/schemas/Empty"
+          /suggestion:
+            get:
+              summary: Returns an suggested string for use as a shortcode
+              parameters:
+              - name: "Accept"
+                in: "header"
+                schema:
+                  type: "string"
+              responses:
+                200:
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Suggestion"
+            options:
+              responses:
+                200:
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Methods:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Headers:
+                      schema:
+                        type: "string"
+                  content:
+                    application/json:
+                      schema:
+                        $ref: "#/components/schemas/Empty"
+          /shortcodes/{shortcode}:
+            get:
+              summary: Get a shortcode object for a given name
+              parameters:
+              - name: "shortcode"
+                in: "path"
+                required: true
+                schema:
+                  type: "string"
+              - name: "Accept"
+                in: "header"
+                schema:
+                  type: "string"
+              responses:
+                404:
+                  description: "404 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Errors"
+                200:
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Shortcode"
+              security:
+              - api_key: []
+            put:
+              summary: Update a shortcode
+              parameters:
+              - name: "shortcode"
+                in: "path"
+                required: true
+                schema:
+                  type: "string"
+              - name: "destination"
+                in: "query"
+                required: false
+                schema:
+                  type: "string"
+              - name: "ssl"
+                in: "query"
+                required: false
+                schema:
+                  type: "boolean"
+              - name: "Content-Type"
+                in: "header"
+                schema:
+                  type: "string"
+              - name: "Accept"
+                in: "header"
+                schema:
+                  type: "string"
+              responses:
+                400:
+                  description: "Unprocessable entity"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Errors"
+                404:
+                  description: "Requested object does not exist"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Errors"
+                200:
+                  description: "Successfully updated"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Empty"
+              security:
+              - api_key: []
+            delete:
+              summary: "Delete a shortcode"
+              parameters:
+              - name: "shortcode"
+                in: "path"
+                required: true
+                schema:
+                  type: "string"
+              - name: "Accept"
+                in: "header"
+                schema:
+                  type: "string"
+              responses:
+                404:
+                  description: "Requested resource does not exist"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Errors"
+                200:
+                  description: "Success"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Content-Type:
+                      schema:
+                        type: "string"
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: "#/components/schemas/Errors"
+              security:
+              - api_key: []
+            head:
+              parameters:
+              - name: "shortcode"
+                in: "path"
+                required: true
+                schema:
+                  type: "string"
+              responses:
+                404:
+                  description: "404 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                  content: {}
+                200:
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                  content:
+                    application/json:
+                      schema:
+                        $ref: "#/components/schemas/Empty"
+        components:
+          schemas:
+            JsonApiRecord:
+              type: "object"
+              required:
+                - "type"
+                - "id"
+                - "attributes"
+              properties:
+                type:
+                  type: "string"
+                id:
+                  type: "string"
+                attributes:
+                  type: "object"
+                links:
+                  type: "object"
+                  properties:
+                    self:
+                      type: "string"
+                meta:
+                  type: "object"
+                  
+            ShortcodeBase:
+              allOf:
+              - $ref: "#/components/schemas/JsonApiRecord"
+              - type: "object"
+              properties:
+                type:
+                  pattern: "^shortcodes$"
+                attributes:
+                  required:
+                  - "name"
+                  - "destination"
+                  - "ssl"
+                  properties:
+                    name:
+                      type: "string"
+                    destination:
+                      type: "string"
+                    ssl:
+                      type: "boolean"
+                    qr-code:
+                      type: "string"
+                links:
+                  properties:
+                    self:
+                      type: "string"
+                meta:
+                  required:
+                    - "access_count"
+                    - "created_at"
+                    - "updated_at"
+                    - "generated_link"
+                  properties:
+                    access_count:
+                      type: "string"
+                    created_at:
+                      type: "string"
+                    updated_at:
+                      type: "string"
+                    generated_link:
+                      type: "string"
+                      
+            Shortcode:
+              type: "object"
+              required:
+                - "data"
+              properties:
+                data:
+                  $ref: "#/components/schemas/ShortcodeBase"
+
+            ShortcodeCollection:
+              type: "object"
+              required:
+                - "data"
+              properties:
+                data:
+                  type: "array"
+                  items:
+                    $ref: "#/components/schemas/ShortcodeBase"
+
+            SuggestionBase:
+              allOf:
+              - $ref: "#/components/schemas/JsonApiRecord"
+              - type: "object"
+              properties:
+                type:
+                  pattern: "^suggestion$"
+                attributes:
+                  required:
+                  - "name"
+                  properties:
+                    name:
+                      type: "string"
+
+            Suggestion:
+              type: "object"
+              required:
+                - "data"
+              properties:
+                data:
+                  $ref: "#/components/schemas/SuggestionBase"
+            
+            Error:
+              type: "object"
+              required:
+                - "status"
+                - "message"
+              properties:
+                status:
+                  type: "string"
+                message:
+                  type: "string"
+            Errors:
+              type: "object"
+              required:
+                - "errors"
+              properties:
+                errors:
+                  type: "array"
+                  items:
+                    $ref: "#/components/schemas/Error"
+            Empty:
+              title: "Empty Schema"
+              type: "object"
+          securitySchemes:
+            api_key:
+              type: "apiKey"
+              name: "x-api-key"
+              in: "header"
   ConfigLambdaPermission:
     Type: "AWS::Lambda::Permission"
     DependsOn:

@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  petit-lambda
+  Petit URL Shortener backend for Lambda and API-Gateway 
+Resources:
+  PetitDatabase:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      Tags:
+        -
+          Key: "ApplicationName"
+          Value: "Petit URL Shortener"
+      TableName: "Petit-Production"
+      AttributeDefinitions:
+        -
+          AttributeName: "shortcode"
+          AttributeType: "S"
+        -
+          AttributeName: "destination"
+          AttributeType: "S"
+        -
+          AttributeName: "ssl"
+          AttributeType: "B"
+        -
+          AttributeName: "access_count"
+          AttributeType: "N"
+        -
+          AttributeName: "created_at"
+          AttributeType: "N"
+        -
+          AttributeName: "updated_at"
+          AttributeType: "N"
+      KeySchema:
+        -
+          AttributeName: "shortcode"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      GlobalSecondaryIndexes:
+        -
+          IndexName: "destinationIndex"
+          KeySchema:
+            -
+              AttributeName: "destination"
+              Keytype: "HASH"
+          Projection:
+              ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+  PetitRedirector:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PetitRedirector
+      Description: >-
+        URL shortener function that simply redirects traffic to destinations
+        stored in dynamodb.
+        (Note: You must connect this to your load balancer manually. SAM does
+        not currently provide a way for an application load balancer to be
+        specified as an event source.)
+      Tags:
+        ApplicationName: "Petit URL Shortener"
+      CodeUri: "./redirector-app"
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 128
+      Timeout: 3
+      Policies:
+        - DynamoDBReadPolicy:
+          TableName: !Ref PetitDatabase
+      Environment:
+        Variables:
+          NOT_FOUND_DESTINATION: "https://www.echocommunity.org/404.html"
+          TABLE_NAME: !Ref PetitDatabase
+  PetitAPIFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: PetitAPIFunction
+      Description: >-
+        URL shortener fucntion that provides an API for crud operations
+      Tags:
+        ApplicationName: "Petit URL Shortener"
+      CodeUri: "./"
+      Handler: lambda.handler
+      Runtime: ruby2.5
+      Events:
+        PetitApi:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+            RestApiId: !Ref PetitAPI
+      Environment: 
+        Variables:
+          DB_TABLE_NAME: !Ref PetitDatabase
+          API_BASE_URL: 'REPLACEME'
+          SERVICE_BASE_URL: 'http://fake.ly'
+      MemorySize: 128
+      Timeout: 30
+      Policies:
+        - DynamoDBCrudPolicy:
+          TableName: !Ref PetitDatabase
+  PetitAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+        Name: PetitAPI
+        StageName: v2
+        DefinitionUri: './api-definitions/petit-api.yml'
+        EndpointConfiguration: "EDGE"
+  ConfigLambdaPermission:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+      - PetitAPIFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PetitAPIFunction
+      Principal: apigateway.amazonaws.com
+  Outputs:
+    APIEndpoint:
+      Description: API Endpoint URL
+      Value: !sub "https://${PetitAPI}.execute-api.${AWS::Region}.amazonaws.com/v2/"

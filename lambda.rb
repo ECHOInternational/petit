@@ -13,6 +13,19 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+# A little explanation of what this is and does. This comes from a demo for running a
+# sinatra application in a Lambda function that was provided by AWS when they announced
+# support for ruby as a language on Lambda. Essentially it is a ruby function called
+# handler that is called by the lambda function on each run, the fuction takes an 
+# event argument (as all Lambda functions do) that contains the payload passed to
+# it. This payload could come from API gateway or the Elastic Load Balancer, depending
+# on which of those two call the function. In either case the event is a hash of keys
+# and values that represent the http request from the load balancer or the request from
+# the api gateway. These keys and values are transformed by the handler function to 
+# match what rack expects and then are passed to the rack app defined in the config.ru
+# file in the app directory. Whatever is returned by the rack app is returned to the
+# calling service.
+
 require 'json'
 require 'rack'
 require 'base64'
@@ -39,8 +52,7 @@ def handler(event:, context:)
     'QUERY_STRING' => querystring || '',
     'SERVER_NAME' => 'localhost',
     'SERVER_PORT' => 443,
-    'CONTENT_TYPE' => event['headers']['content-type'],
-
+    'CONTENT_TYPE' => event.dig('headers', 'content-type'),
     'rack.version' => Rack::VERSION,
     'rack.url_scheme' => 'https',
     'rack.input' => StringIO.new(body || ''),

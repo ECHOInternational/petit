@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  petit-lambda
+  Petit URL Shortener backend for Lambda and API-Gateway 
+  This template is for development use and only supports creating the lambda function.
+Resources:
+  PetitLambdaFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: PetitLambdaFunction
+      CodeUri: "./"
+      Handler: lambda.handler
+      Runtime: ruby2.5
+      Environment: 
+        Variables:
+          DB_TABLE_NAME: 'petit_travis_ci_test'
+          API_BASE_URL: 'REPLACEME'
+          SERVICE_BASE_URL: 'http://fake.ly'
+      MemorySize: 128
+      Timeout: 30

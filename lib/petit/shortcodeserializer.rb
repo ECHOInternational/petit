@@ -29,7 +29,7 @@ module Petit
     # Set the base URL for the API
     # @return [String] the base URL for the API
     def base_url
-      Petit.configuration.api_base_url + '/api/v1'
+      Petit.configuration.api_base_url
     end
 
     # Sets meta parameters
