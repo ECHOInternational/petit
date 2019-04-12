@@ -14,13 +14,13 @@ Parameters:
       does not resolve to an address.
     Type: String
     AllowedPattern: ".+"
-  # Stage:
-  #   Description: >-
-  #     Please provide the name of the stage to be deployed in API Gateway. This
-  #     could be a version "v1, v1.1, v2" or an environment "test, stage, prod"
-  #     this will be appended to the end of each related resource's name as well.
-  #   Type: String
-  #   Default: "test"
+  Stage:
+    Description: >-
+      Please provide the name of the stage to be deployed in API Gateway. This
+      could be a version "v1, v1.1, v2" or an environment "test, stage, prod"
+      this will be appended to the end of each related resource's name as well.
+    Type: String
+    Default: "test"
   ArtifactsBucket:
     Description: >-
       You must provide the bucket name where the petit-api.yml file has been
@@ -35,7 +35,7 @@ Resources:
         -
           Key: "ApplicationName"
           Value: "Petit URL Shortener"
-      TableName: !Sub "PetitVx"
+      TableName: !Sub "Petit-${Stage}"
       AttributeDefinitions:
         -
           AttributeName: "shortcode"
@@ -65,7 +65,7 @@ Resources:
   PetitRedirector:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: PetitRedirectorFunction
+      FunctionName: !Sub "PetitRedirectorFunction-${Stage}"
       Description: >-
         URL shortener function that simply redirects traffic to destinations
         stored in dynamodb.
@@ -90,7 +90,7 @@ Resources:
   PetitAPIFunction:
     Type: AWS::Serverless::Function 
     Properties:
-      FunctionName: "PetitAPIFunctionVx"
+      FunctionName: !Sub "PetitAPIFunction-${Stage}"
       Description: >-
         URL shortener fucntion that provides an API for crud operations
       Tags:
@@ -103,6 +103,8 @@ Resources:
           DB_TABLE_NAME: !Ref PetitDatabase
           # API_BASE_URL: !Sub "https://${PetitAPI}.execute-api.${AWS::Region}.amazonaws.com/vx/"
           SERVICE_BASE_URL: !Ref ServiceBaseUrl
+          API_BASE_URL: REPLACEME
+          APP_ENV: production
       MemorySize: 128
       Timeout: 30
       Policies:
@@ -113,7 +115,7 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
         Name: PetitAPI
-        StageName: vx
+        StageName: !Sub "${Stage}"
         DefinitionBody:
           Fn::Transform:
             Name: AWS::Include
@@ -131,4 +133,4 @@ Resources:
 Outputs:
    APIEndpoint:
      Description: API Endpoint URL
-     Value: !Sub "https://${PetitAPI}.execute-api.${AWS::Region}.amazonaws.com/vx/"
+     Value: !Sub "https://${PetitAPI}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
