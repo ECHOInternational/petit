@@ -45,12 +45,7 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
         httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
     post:
       summary: Create a new shortcode with the given parameters
@@ -123,31 +118,8 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
-          responses:
-            default:
-              statusCode: "200"
-        passthroughBehavior: "when_no_match"
         httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
-    options:
-      responses:
-        200:
-          description: "200 response"
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: "string"
-            Access-Control-Allow-Methods:
-              schema:
-                type: "string"
-            Access-Control-Allow-Headers:
-              schema:
-                type: "string"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Empty"
   /suggestion:
     get:
       summary: Returns an suggested string for use as a shortcode
@@ -173,31 +145,8 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
         httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
-    options:
-      responses:
-        200:
-          description: "200 response"
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: "string"
-            Access-Control-Allow-Methods:
-              schema:
-                type: "string"
-            Access-Control-Allow-Headers:
-              schema:
-                type: "string"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Empty"
   /shortcodes/{shortcode}:
     get:
       summary: Get a shortcode object for a given name
@@ -243,12 +192,7 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
         httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
     put:
       summary: Update a shortcode
@@ -321,12 +265,7 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
         httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
     delete:
       summary: "Delete a shortcode"
@@ -372,12 +311,7 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
         httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
     head:
       parameters:
@@ -389,12 +323,7 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
         httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
       responses:
         404:
