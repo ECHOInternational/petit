@@ -1,7 +1,4 @@
 openapi: "3.0.1"
-info:
-  title: "Petit URL Shortener"
-  version: "2"
 paths:
   /shortcodes:
     get:
@@ -46,7 +43,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/ShortcodeCollection"
       x-amazon-apigateway-integration:
-        uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
         responses:
           default:
             statusCode: "200"
@@ -123,10 +121,11 @@ paths:
       security:
       - api_key: []
       x-amazon-apigateway-integration:
-        uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations"
-        responses:
-          default:
-            statusCode: "200"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
+          responses:
+            default:
+              statusCode: "200"
         passthroughBehavior: "when_no_match"
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
@@ -172,7 +171,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Suggestion"
       x-amazon-apigateway-integration:
-        uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
         responses:
           default:
             statusCode: "200"
@@ -241,7 +241,8 @@ paths:
       security:
       - api_key: []
       x-amazon-apigateway-integration:
-        uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
         responses:
           default:
             statusCode: "200"
@@ -318,7 +319,8 @@ paths:
       security:
       - api_key: []
       x-amazon-apigateway-integration:
-        uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
         responses:
           default:
             statusCode: "200"
@@ -368,7 +370,8 @@ paths:
       security:
       - api_key: []
       x-amazon-apigateway-integration:
-        uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
         responses:
           default:
             statusCode: "200"
@@ -384,7 +387,8 @@ paths:
         schema:
           type: "string"
       x-amazon-apigateway-integration:
-        uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PetitAPIFunction.Arn}/invocations
         responses:
           default:
             statusCode: "200"

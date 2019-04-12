@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'petit-lambda Petit URL Shortener backend for Lambda and API-Gateway
+
+  '
+Parameters:
+  ServiceBaseUrl:
+    Description: Please provide the base url for your URL shortener
+    Type: String
+    AllowedPattern: .+
+  NotFoundDestination:
+    Description: Please provide a location to which users will be routed if the shortcode
+      does not resolve to an address.
+    Type: String
+    AllowedPattern: .+
+  Stage:
+    Description: Please provide the name of the stage to be deployed in API Gateway.
+      This could be a version "v1, v1.1, v2" or an environment "test, stage, prod"
+      this will be appended to the end of each related resource's name as well.
+    Type: String
+    Default: test
+  ArtifactsBucket:
+    Description: You must provide the bucket name where the petit-api.yml file has
+      been uploaded.
+    Type: String
+    AllowedPattern: .+
+Resources:
+  PetitDatabase:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      Tags:
+      - Key: ApplicationName
+        Value: Petit URL Shortener
+      - Key: Stage
+        Value:
+          Ref: Stage
+      TableName:
+        Fn::Sub: Petit-${Stage}
+      AttributeDefinitions:
+      - AttributeName: shortcode
+        AttributeType: S
+      - AttributeName: destination
+        AttributeType: S
+      KeySchema:
+      - AttributeName: shortcode
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      GlobalSecondaryIndexes:
+      - IndexName: destinationIndex
+        KeySchema:
+        - AttributeName: destination
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+  PetitRedirector:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PetitRedirectorFunction
+      Description: 'URL shortener function that simply redirects traffic to destinations
+        stored in dynamodb. (Note: You must connect this to your load balancer manually.
+        SAM does not currently provide a way for an application load balancer to be
+        specified as an event source.)'
+      Tags:
+        ApplicationName: Petit URL Shortener
+      CodeUri: s3://serverless.echocommunity.org/dd74454e40d6a46a518b55166a93f010
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 128
+      Timeout: 3
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: PetitDatabase
+      Environment:
+        Variables:
+          NOT_FOUND_DESTINATION:
+            Ref: NotFoundDestination
+          TABLE_NAME:
+            Ref: PetitDatabase
+  PetitAPIFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: PetitAPIFunction-${Stage}
+      Description: URL shortener fucntion that provides an API for crud operations
+      Tags:
+        ApplicationName: Petit URL Shortener
+        Stage:
+          Ref: Stage
+      CodeUri: s3://serverless.echocommunity.org/224bf938bd4eebc996b7de1d3927dcc6
+      Handler: lambda.handler
+      Runtime: ruby2.5
+      Events:
+        GetShortcodes:
+          Type: Api
+          Properties:
+            Path: /shortcodes
+            Method: GET
+            RestApiId:
+              Ref: PetitAPI
+        PostShortCodes:
+          Type: Api
+          Properties:
+            Path: /shortcodes
+            Method: POST
+            RestApiId:
+              Ref: PetitAPI
+        GetSuggestion:
+          Type: Api
+          Properties:
+            Path: /suggestion
+            Method: GET
+            RestApiId:
+              Ref: PetitAPI
+        GetShortcode:
+          Type: Api
+          Properties:
+            Path: /shortcodes/{shortcode}
+            Method: GET
+            RestApiId:
+              Ref: PetitAPI
+        PutShortcode:
+          Type: Api
+          Properties:
+            Path: /shortcodes/{shortcode}
+            Method: PUT
+            RestApiId:
+              Ref: PetitAPI
+        DeleteShortcode:
+          Type: Api
+          Properties:
+            Path: /shortcodes/{shortcode}
+            Method: DELETE
+            RestApiId:
+              Ref: PetitAPI
+        HeadShortcode:
+          Type: Api
+          Properties:
+            Path: /shortcodes/{shortcode}
+            Method: HEAD
+            RestApiId:
+              Ref: PetitAPI
+      Environment:
+        Variables:
+          DB_TABLE_NAME:
+            Ref: PetitDatabase
+          API_BASE_URL:
+            Fn::Sub: https://${PetitAPI}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/
+          SERVICE_BASE_URL:
+            Ref: ServiceBaseUrl
+      MemorySize: 128
+      Timeout: 30
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: PetitDatabase
+  PetitAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: PetitAPI
+      StageName:
+        Ref: Stage
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location:
+              Fn::Sub: s3://${ArtifactsBucket}/petit-api.yml
+      EndpointConfiguration: EDGE
+Outputs:
+  APIEndpoint:
+    Description: API Endpoint URL
+    Value:
+      Fn::Sub: https://${PetitAPI}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/

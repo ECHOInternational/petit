@@ -1,0 +1,11 @@
+{
+  "name": "redirector-app",
+  "version": "1.0.0",
+  "description": "URL shortener function that simply redirects traffic to destinations stored in dynamodb",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nate Flood for ECHO Inc.",
+  "license": "MIT"
+}
