@@ -30,6 +30,8 @@ The table name is appended with the name of the deployed stage.
 
 	Defaults to "test"
 
+- **ApiBaseUrl**: The url to your API if you're using a custom domain name for your API
+
 - **ServiceBaseUrl**: Public base URL like 'http://bit.ly'
 	
 	Required.
@@ -102,9 +104,19 @@ This install guide assumes that you have Ruby version 2.5 and the AWS CLI alread
      --parameter-overrides NotFoundDestination={ your-not-found-destination } \
      ArtifactsBucket={ your-bucket-name } \
      ServiceBaseUrl={ your-base-url }
+
     ```
 
-#### API Custom Domain
+8. Once the stack has deployed successfully you will have just a few additional steps to
+   complete to have your service running properly.
+	
+	+ Enable CORS
+	+ Set up a custom domain for your API
+	+ Set the API_Base_URL
+	+ Connect your Application Load Balancer to your PetitRedirector function
+
+
+API Custom Domain
 You can use a custom domain name for the API endpoint. This can be configured through API Gateway.
 In addition you should also change the API_BASE_URL environment variable on the PetitAPIFunction to match.
 

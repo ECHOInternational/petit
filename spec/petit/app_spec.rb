@@ -85,6 +85,22 @@ describe 'Petit App' do
         expect(last_response.body).to be_a String
       end
     end
+    context 'when leading path segments are present' do
+      it "ignores extra leading path segments" do
+        header 'Accept', 'application/vnd.api+json'
+        get '/dumpthis/garbage/suggestion', {}, 'HTTPS' => 'on'
+        json_response = JSON.parse(last_response.body)
+        expect(json_response).to include 'data'
+        expect(json_response['data']).to be_a Hash
+        expect(json_response['data']).to include 'type'
+        expect(json_response['data']['type']).to eq 'suggestion'
+        expect(json_response['data']['id']).to be_a String
+        expect(json_response['data']).to include 'attributes'
+        expect(json_response['data']['attributes']).to include 'name'
+        expect(json_response['data']['attributes']['name'].length).to be > 0
+        expect(json_response['data']['attributes']['name']).to be_a String
+      end
+    end
   end
 
   describe "get '/shortcodes'" do
@@ -198,6 +214,19 @@ describe 'Petit App' do
             expect(json_response['data'][0]['attributes']).to include 'qr-code'
             expect(json_response['data'][0]['attributes']['qr-code']).to be_kind_of String
           end
+          context 'when leading path segments are present' do
+            it "ignores extra leading path segments" do
+              header 'Accept', 'application/json'
+              get(
+                '/leading/garbage/shortcodes',
+                { 'destination' => 'www.yahoo.com' },
+                'HTTPS' => 'on'
+              )
+              json_response = JSON.parse(last_response.body)
+              expect(json_response['data'][0]['attributes']).to include 'name'
+              expect(json_response['data'][0]['attributes']).to include 'destination'
+            end
+          end
           context 'when sparse fieldsets are requested' do
             it 'only returns requested attributes' do
               header 'Accept', 'application/json'
@@ -237,6 +266,12 @@ describe 'Petit App' do
         head '/shortcodes/abc123', {}, 'HTTPS' => 'on'
         expect(last_response.body).to be_empty
       end
+      context 'when leading path segments are present' do
+        it "ignores extra leading path segments" do
+          head '/extra/garbage/shortcodes/abc123', {}, 'HTTPS' => 'on'
+          expect(last_response.status).to eq 200
+        end
+      end
     end
   end
 
@@ -265,6 +300,14 @@ describe 'Petit App' do
           json_response = JSON.parse(last_response.body)
           expect(json_response['data']['attributes']).to include 'name'
           expect(json_response['data']['attributes']).to include 'destination'
+        end
+        context 'when leading path segments are present' do
+          it "ignores extra leading path segments" do
+            get '/leading/garbage/shortcodes/abc123', {}, 'HTTPS' => 'on'
+            json_response = JSON.parse(last_response.body)
+            expect(json_response['data']['attributes']).to include 'name'
+            expect(json_response['data']['attributes']).to include 'destination'
+          end
         end
         it 'returns a url to the generated shortcode' do
           get '/shortcodes/abc123', {}, 'HTTPS' => 'on'
