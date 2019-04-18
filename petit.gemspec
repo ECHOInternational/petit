@@ -24,6 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'json', '~> 2'
   spec.add_dependency 'jsonapi-serializers'
   spec.add_dependency 'rack-parser'
+  spec.add_dependency 'rack', '>= 1.6.11'
   spec.add_dependency 'unicorn'
   spec.add_dependency 'rake'
 
