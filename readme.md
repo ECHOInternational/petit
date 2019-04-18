@@ -1,7 +1,11 @@
 Petit:Lambda - Url Shortening Service Based on AWS Lambda and API Gateway
 ===========================================
 
-Put full description here. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur ex quis, architecto placeat officiis sit ea esse laborum enim quibusdam cum modi saepe in alias deserunt explicabo eos dolore iste.
+Petit:lambda is a serverless URL shortening service based on Ruby, Node.js and AWS.
+
+This is a port of the original Petit URL shortener (which is arguably faster) but is not serverless. https://github.com/ECHOInternational/petit
+
+This app and accompanying Cloudformation Template will create nearly everything you need to run a URL shortener on AWS Lambda. The user-facing portions run behind an Application Load Balancer and the API behind AWS API Gateway. 
 
 ## Stack
 ### Lambda Functions
@@ -30,7 +34,9 @@ The table name is appended with the name of the deployed stage.
 
 	Defaults to "test"
 
-- **ApiBaseUrl**: The url to your API if you're using a custom domain name for your API
+- **ApiBaseUrl**: The url to your API. The generic one assigned by API Gateway will be in the outputs of your cloudformation stack. if you're using a custom domain name for your API you should specify the custom domain and any path variables here. If this is not set, or is inaccurate, the "self" links returned in the payload will be incorrect.
+
+	Defaults to "https://REPLACEME.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
 
 - **ServiceBaseUrl**: Public base URL like 'http://bit.ly'
 	
@@ -93,7 +99,8 @@ This install guide assumes that you have Ruby version 2.5 and the AWS CLI alread
      --capabilities CAPABILITY_IAM \
      --parameter-overrides NotFoundDestination={ your-not-found-destination } \
      ArtifactsBucket={ your-bucket-name } \
-     ServiceBaseUrl={ your-base-url }
+     ServiceBaseUrl={ your-base-url } \
+     ApiBaseUrl={ your-api-base-url }
     ```
     The SAM equivalent:
     ```Bash
@@ -103,22 +110,52 @@ This install guide assumes that you have Ruby version 2.5 and the AWS CLI alread
      --capabilities CAPABILITY_IAM \
      --parameter-overrides NotFoundDestination={ your-not-found-destination } \
      ArtifactsBucket={ your-bucket-name } \
-     ServiceBaseUrl={ your-base-url }
-
+     ServiceBaseUrl={ your-base-url } \
+     ApiBaseUrl={ your-api-base-url }
     ```
 
 8. Once the stack has deployed successfully you will have just a few additional steps to
    complete to have your service running properly.
 	
-	+ Enable CORS
-	+ Set up a custom domain for your API
-	+ Set the API_Base_URL
-	+ Connect your Application Load Balancer to your PetitRedirector function
+	+ [Enable CORS](#enable-cors) (Optional)
+	+ [Set up a custom domain for your API](#set-up-a-custom-domain-name-for-your-api) (Optional)
+
+9. Set the API_BASE_URL
+
+	Whether or not you customize your API Url you should still set the Environment Variable on the PetitApiFunction so that the json responses contain the correct URL. 
+
+	Set the `API_BASE_URL` to either the API Gateway address for the stage you're using or the custom domain that you have configured. (Remember that you may need to add the base path mapping and/or the stage name to the end of the custom domain name).
+
+	**NOTE:** you can get the API Gateway Address needed here from the outputs section of the Cloudformation Stack. It is labeled `API Endpoint URL`. (If anyone can figure out how to set this automatically without causing a circular dependency I would accept your pull request with great joy.)
+
+	The AWS Documentation is helpful if you don't know how to change environment variables on Lambda functions.
+	https://docs.aws.amazon.com/lambda/latest/dg/env_variables.html
+
+10. Connect your Application Load Balancer to your PetitRedirector function
+
+	You will need an API load balancer with a domain pointed at it through dns. For instance you want a very short domain name like goto.link (but of course you already know this or you wouldn't be creating a url shortener).
+
+	Creating an Application Load Balancer is beyond the scope of this document. For instructions see the AWS documentation: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancer-getting-started.html
+	
+	Once your load balancer is is place you should point traffic coming in from your domain on port 80 to your `PetitRedirectorFunction` lambda function.
+
+	Your URL shortener should be ready for use!
+
+### Enable CORS
+If you do not enable cors your URL shortener will still work, but the API will only be able to be called from sites on the same domain from javascript in a browser.
+
+This is easiest to implement directly through the AWS console:
+https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-cors.html#how-to-cors-console
+
+### Set up a custom domain name for your API
+A custom domain name for your API is not required, but can make your urls shorter, and more maintainable (for instance if you ever want to leave API gateway and still need your API to work).
+
+Setting up security certificates, DNS, and the custom domain name are beyond the scope of this document but the AWS documentation is quite clear:
+https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html
 
 
-API Custom Domain
-You can use a custom domain name for the API endpoint. This can be configured through API Gateway.
-In addition you should also change the API_BASE_URL environment variable on the PetitAPIFunction to match.
+
+
 
 
 ## About The Author(s)
