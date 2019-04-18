@@ -72,7 +72,7 @@ DEPENDENCIES
   aws-sdk (~> 2)
   json (~> 2)
   jsonapi-serializers
-  rack
+  rack (>= 1.6.11)
   rack-contrib
   rack-parser
   rack-test
@@ -83,4 +83,4 @@ DEPENDENCIES
   sinatra
 
 BUNDLED WITH
-   1.16.6
+   1.17.3

@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gem 'sinatra'
 gem 'json', '~> 2'
 gem 'jsonapi-serializers'
-gem 'rack'
+gem "rack", ">= 1.6.11"
 gem 'rack-contrib'
 gem 'rack-parser'
 gem 'aws-record'
