@@ -16,9 +16,5 @@ notification:
     on_failure: change
     on_success: never
 
-before_install:
-  - gem install -v 1.17.3 bundler --no-rdoc -no-ri
-  - bundle _1.17.3_ install
-
-# before_install: 'rm ${BUNDLE_GEMFILE}.lock'
-# before_script: 'bundle update'
+before_install: 'rm ${BUNDLE_GEMFILE}.lock'
+before_script: 'bundle update'
